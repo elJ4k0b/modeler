@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name='viewport' content='width=device-width, height=device-height, initial-scale:1, user-scalable=no' />
+    <title>Document</title>
+    <style>
+        #myContainer {
+  width: 500px;
+  height: 500px;
+  overflow: auto;
+  transform-origin: top left;
+}
+
+#myContainer.zoom {
+  transform: scale(4);
+}
+
+#myContainer img {
+  width: 100%;
+  height: auto;
+}
+
+#canvas {
+  transform-origin: top left;
+}
+
+#myAbsoluteElement {
+  top: 0;
+  left: 0;
+  width: 100px;
+  height: 50px;
+  background-color: red;
+  transform-origin: top left;
+  transform: translateZ(0);
+}
+    </style>
+</head>
+<body>
+  <div id="myContainer" style="width: 500px; height: 500px; overflow: hidden; background-color:aliceblue;">
+    <svg width="100%" height="100%">
+      <g id="canvas" style="width: 1000px; height: 1000px;">
+        <rect width="200px" height="100px" id="myAbsoluteElement" ></rect>
+      </g>
+    </svg>
+  </div>
+  <svg>
+    
+  </svg>
+</body>
+<script>
+  let container = document.getElementById("myContainer");
+  let element = document.getElementById("myAbsoluteElement");
+  container.scroll({
+  top: 400,
+  left: 400,
+  behavior: "instant",
+});
+//Das <div>-Element auswählen
+  var myDiv = document.getElementById("canvas");
+  var myContainer = document.getElementById("myContainer");
+  
+  // Den Zoom-Faktor auf 1 setzen
+  var zoomFactor = 1;
+  
+  // Event-Handler hinzufügen
+  myContainer.addEventListener("wheel", function(event) {
+    let style = window.getComputedStyle(myDiv);
+    let currMatrix = new WebKitCSSMatrix(style.transform);
+    var delta = event.deltaY || event.detail || event.wheelDelta; // Delta-Wert abrufen
+
+    if (event.ctrlKey) { // Wenn Strg (oder Ctrl) gedrückt ist
+      event.preventDefault(); // Das Standard-Browser-Verhalten verhindern
+    
+      zoomFactor += delta * 0.001; // Zoom-Faktor anpassen
+
+      
+      
+    
+    
+      //myDiv.style.transform = "scale(" + zoomFactor + ")"; // Das <div>-Element zoomen
+      myDiv.style.transform = `matrix(${zoomFactor}, 0, 0, ${zoomFactor}, ${currMatrix.e}, ${currMatrix.f})`
+      requestAnimationFrame(()=> {
+        myDiv.style.width = 1000  * (1/zoomFactor) + "px";
+        myDiv.style.height = 1000  * (1/zoomFactor) + "px";
+      })
+        
+    }
+    else if (event.shiftKey)
+    {
+      myDiv.style.transform = `matrix(${currMatrix.a}, 0, 0, ${currMatrix.d}, ${currMatrix.e + delta}, ${currMatrix.f})`;
+    }
+    else
+    {
+      myDiv.style.transform = `matrix(${currMatrix.a}, 0, 0, ${currMatrix.d}, ${currMatrix.e}, ${currMatrix.f + delta})`;
+    }
+    style = window.getComputedStyle(myDiv);
+    currMatrix = new WebKitCSSMatrix(style.transform);
+    console.log(currMatrix.toString());
+  });
+
+  init();
+
+  let evCache = [];
+  let startPosChache = {};
+  let initDist = 0;
+  var zoomFactor = 1;
+  let prevDiff = -1;
+
+  function init() {
+  // Install event handlers for the pointer target
+  const el = document.getElementById("myContainer");
+  el.onpointerdown = pointerdownHandler;
+  el.onpointermove = pointermoveHandler;
+
+  // Use same handler for pointer{up,cancel,out,leave} events since
+  // the semantics for these events - in this app - are the same.
+  el.onpointerup = pointerupHandler;
+  el.onpointercancel = pointerupHandler;
+  el.onpointerout = pointerupHandler;
+  el.onpointerleave = pointerupHandler;
+}
+
+function pointerdownHandler(ev) {
+  ev.preventDefault();
+  // The pointerdown event signals the start of a touch interaction.
+  // This event is cached to support 2-finger gestures
+  evCache.push(ev);
+  startPosChache[ev.pointerId] = {x: ev.clientX, y: ev.clientY};
+  //element.innerHTML = "<h1>" + evCache.length + "</h1>";
+  if(evCache.length === 2)
+  {
+    initDist = Math.abs(evCache[0].clientX - evCache[1].clientX);
+    element.innerHTML = "<h1>" + 0 + "</h1>";
+    myDiv.style.backgroundColor = `red`;
+  }
+  //log("pointerDown", ev);
+}
+
+function pointermoveHandler(ev) {
+  
+  // This function implements a 2-pointer horizontal pinch/zoom gesture.
+  //
+  // If the distance between the two pointers has increased (zoom in),
+  // the target element's background is changed to "pink" and if the
+  // distance is decreasing (zoom out), the color is changed to "lightblue".
+  //
+  // This function sets the target element's border to "dashed" to visually
+  // indicate the pointer's target received a move event.
+  //log("pointerMove", ev);
+
+  // Find this event in the cache and update its record with this event
+  const index = evCache.findIndex(
+    (cachedEv) => cachedEv.pointerId === ev.pointerId
+  );
+  evCache[index] = ev;
+  document.body.backgroundColor = "red";
+  // If two pointers are down, check for pinch gestures
+  if (evCache.length === 2) {
+    ev.preventDefault();
+    event.target.style.touchAction = "none";
+    // Calculate the distance between the two pointers
+    const curDiff = Math.abs(evCache[0].clientX - evCache[1].clientX);
+
+    let style = window.getComputedStyle(myDiv);
+    let currMatrix = new WebKitCSSMatrix(style.transform);
+    let scale = curDiff/initDist;
+    myDiv.style.transform = `matrix(${scale}, 0, 0, ${scale}, ${currMatrix.e}, ${currMatrix.f})`;
+
+
+    if (prevDiff > 0) {
+      if (curDiff > prevDiff) {
+        // The distance between the two pointers has increased
+        //log("Pinch moving OUT -> Zoom in", ev);
+        ev.target.style.background = "pink";
+      }
+      if (curDiff < prevDiff) {
+        // The distance between the two pointers has decreased
+        //log("Pinch moving IN -> Zoom out", ev);
+        ev.target.style.background = "lightblue";
+      }
+    }
+    // Cache the distance for the next move event
+    prevDiff = curDiff;
+  }
+  else if(evCache.length === 1)
+  {
+    myDiv.style.touchAction = "none";
+    event.target.style.touchAction = "none";
+    myContainer.target.style.touchAction = "none";
+    
+    console.log("JEE")
+    let event = evCache[0];
+    let startPos = startPosChache[event.pointerId];
+
+    let distanceX = startPos.x - event.clientX;
+    console.log(distanceX);
+    let distanceY = startPos.y - event.clientY;
+    console.log(distanceY);
+
+    let style = window.getComputedStyle(myDiv);
+    let currMatrix = new WebKitCSSMatrix(style.transform);
+    
+    myDiv.style.transform = `matrix(${currMatrix.a}, 0, 0, ${currMatrix.d}, ${currMatrix.e + distanceX}, ${currMatrix.f + distanceY})`;
+  }
+
+  
+}
+
+function pointerupHandler(ev) {
+  zoomFactor = myDiv.getBoundingClientRect().width / myDiv.offsetWidth;
+  //log(ev.type, ev);
+  // Remove this pointer from the cache and reset the target's
+  // background and border
+  removeEvent(ev);
+  delete startPosChache[ev.pointerId];
+  myContainer.style.touchAction = "all";
+  myDiv.style.touchAction = "all";
+  //ev.target.style.background = "white";
+  //ev.target.style.border = "1px solid black";
+
+  // If the number of pointers down is less than two then reset diff tracker
+  if (evCache.length < 2) {
+    prevDiff = -1;
+  }
+}
+
+function removeEvent(ev) {
+  // Remove this event from the target's cache
+  const index = evCache.findIndex(
+    (cachedEv) => cachedEv.pointerId === ev.pointerId
+  );
+  evCache.splice(index, 1);
+}
+
+let absolute = document.getElementById("myAbsoluteElement");
+let dragging = false;
+absolute.onpointerdown = (ev) => {
+  dragging = true;
+  console.log("drag");
+  absolute.setPointerCapture(ev.pointerId);
+};
+  
+absolute.onpointermove = (ev) => {
+  if(!dragging) return;
+  console.log("dragging");
+  let style = window.getComputedStyle(myDiv);
+  let currMatrix = new WebKitCSSMatrix(style.transform);
+    let left = ev.clientX / zoomFactor;
+    let top = ev.clientY / zoomFactor;
+  left -= currMatrix.e;
+  top -= currMatrix.f;
+  absolute.style.transform = `translate(${left}px, ${top}px)`
+  //absolute.style.left = left;
+  //absolute.style.top = top;
+}
+
+absolute.onpointerup = (ev) => {
+  dragging = false;
+};
+</script>
+</html>
+

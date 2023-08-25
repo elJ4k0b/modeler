@@ -1,0 +1,174 @@
+:root{
+    --card-color: white;
+    --text-color: #C71E1E;
+}
+
+svg:not(:root) {
+    overflow: visible !important;
+}
+
+* {
+    box-sizing: border-box;
+    scroll-behavior: smooth;
+}
+
+body {
+   background-image: radial-gradient(#ccc 10%, transparent 10%),
+     radial-gradient(#ccc 10%, transparent 10%);
+   background-color: #fff;
+   background-position: 0 0, 50px 50px;
+   background-size: 50px 50px;
+   margin: 0;
+}
+
+diagram-element {
+
+    min-height: 200px;
+    min-width: 200px;
+    position: absolute;
+    display:flex;
+    flex-direction: column;
+    top: 50%;
+    left: 50%;
+    
+    padding: 1.5rem;
+    border-radius: 1rem;
+    background-color: var(--card-color);
+    outline: none;
+    box-shadow: 0 0 0.6rem rgba(0, 0, 0, 0.2);
+
+}
+
+
+.transition-move {
+    transition: left 0.5s ease, top 0.5s ease-in;
+}
+
+.card {   
+    touch-action: pinch-zoom;
+    min-height: 100px;
+    min-width: 100px;
+    position: absolute;
+    display:flex;
+    flex-direction: column;
+    top: 50%;
+    left: 50%;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    background-color: var(--card-color);
+    outline: none;
+}
+
+.card > .card-title {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--text-color);
+    margin-top: 0%;
+    margin-bottom: 1rem;
+    height: fit-content;
+    display:inline-block;
+    width: 100%;
+    text-align: center;
+}
+
+.card-start {
+    box-shadow: 0 0 1.5rem rgba(0, 0, 0, 0.2);
+
+}
+.card-start::before {
+    position: absolute;
+    width: 10%;
+    height: 10%;
+    top: 5%;
+    right: 10%;
+    content: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="%231f6aff" class="bi bi-geo-alt-fill" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>');
+}
+
+.popover {
+    transform-origin: top left;
+    padding-block: 0.05rem;
+    height: fit-content;
+    min-height: 2rem;
+    min-width:auto;
+    position: absolute;
+    left: 50%;
+    top: -10%;
+    transform:  scale(1) translate(-50%, -100%);
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s ease-in, max-width 1s linear;
+    border-radius: 5rem;
+    background-color: white;
+    
+    justify-content: space-around;
+    display:flex;
+    flex-direction: row;
+    
+}
+.popover-shrunken {
+    max-width: 0px!important;
+}
+
+.container {
+    position: relative;
+    display: block;
+
+}
+
+.container-title {
+    text-overflow: ellipsis;
+    position: absolute;
+    transform-origin: bottom right;
+    transform: translate(-100%,-100%) rotate(270deg) translateY(100%);
+    font-family: sans-serif;
+    border-block-end: solid 2px lightgray;
+}
+
+/*icon classes*/
+.icon {
+    margin-inline: 0.2rem;;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height:auto;
+    border-radius: 5rem;
+    box-sizing: border-box;
+}
+
+@media (hover: none) {
+    .icon:hover {
+        background-color: inherit;
+    }
+}
+
+.icon:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+.icon:first-child {
+    margin-left: 0.05rem;
+}
+
+.icon:last-child {
+    margin-right: 0.05rem;
+}
+
+
+.icon-locked {
+    color: white;
+    background-color: #1f6aff;
+}
+
+
+/* Selection of shadow options*/
+
+.shadow-large {
+    box-shadow: 0 0 1.5rem rgba(0, 0, 0, 0.2);
+}
+
+.shadow-medium {
+    box-shadow: 0 0 0.6rem rgba(0, 0, 0, 0.2);
+}
+
+.shadow-small {
+    box-shadow: 0 0 0.3rem rgba(0, 0, 0, 0.1);
+}
