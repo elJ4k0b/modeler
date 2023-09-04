@@ -19,6 +19,7 @@ const TOOLS = {
 function switch_tool(tool)
 {
     console.log("switching tool to" + tool);
+    //if(tool != TOOLS.zoom) zoomHandler.viewport.style.backgroundColor = "red";
     switch(tool) 
     {
         case (TOOLS.select):
@@ -56,14 +57,27 @@ class CustomEvents extends MouseEvent
         super.handleLongPress(pointer, event);
     }
 
+    handlePointerDown(event)
+    {
+        if(selected_tool == TOOLS.scroll && Object.keys(this._pointers).length == 2)
+        {
+            switch_tool(TOOLS.zoom);
+            startpinch(this._pointers);
+        }
+    }
+
     handleDragStart(event)
     {
         let target = event.target;
         if(Object.keys(this._pointers).length >= 2)
         {
             console.log("Hallo wir zoomend jetzt");
-            switch_tool(TOOLS.zoom);
-            startpinch(this._pointers);
+            if(selected_tool != TOOLS.zoom)
+            {
+                switch_tool(TOOLS.zoom);
+                startpinch(this._pointers);
+            }
+            return;
         }else if(target.id == "viewport")
         {
             console.log("viewport")
@@ -79,8 +93,6 @@ class CustomEvents extends MouseEvent
     }
     handleDrag(event)
     {
-        console.log("selected toool")
-        console.log(selected_tool);
         switch(selected_tool)
         {
             case TOOLS.drag:
@@ -99,16 +111,18 @@ class CustomEvents extends MouseEvent
                 console.log("zooming");
                 if(Object.keys(this._pointers).length < 2)
                 {
-                    document.body.style.backgroundColor = "red";
-                    switch_tool(TOOLS.drag);
-                    return;
+                    console.log("weniger als zwei Pointer");
+                     switch_tool(TOOLS.drag);
+                     return;
                 }
                 pinch(this._pointers);
+                break;
             default:
                 console.log("default");
                 drag(event);    
                 break;
         }
+        
     }
 
     handleDragEnd(event)

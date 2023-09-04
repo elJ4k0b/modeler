@@ -57,14 +57,23 @@ class ZoomHandler
         matrix.f -= delta;
         return matrix;
     }
-    _zoom(matrix, delta, event)
+    _zoom(matrix, delta, event, fixed = false)
     {
         let newZoom = this.zoomFactor;
         let center = this.viewportCenter;
 
         //calculate zoom factor
-        delta *= -SCALING_CONSTANT;
-        newZoom += delta;
+        if(!fixed)
+        {
+            delta *= -SCALING_CONSTANT;
+            newZoom += delta;
+        }
+        else
+        {
+            newZoom = delta;
+        }
+
+
         
         if(newZoom < MIN_ZOOM || newZoom > MAX_ZOOM) return matrix;
         matrix.a = newZoom;
@@ -197,8 +206,13 @@ class ZoomHandler
         eventDummy.clientY = center.y;
 
         let matrix =  this._getMatrix(this.viewport);
-        let delta = scale - this.zoomFactor;
-        this._zoom(matrix, delta, eventDummy);
+        
+
+        scale = (this.zoomFactor) / scale;
+
+
+        matrix = this._zoom(matrix, scale, eventDummy, true);
+        this._applyMatrix(this.viewport, matrix);
     }
 
     start_pan(event)

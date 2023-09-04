@@ -2,14 +2,14 @@ class MouseEvent
 {
     constructor()
     {
-        document.addEventListener("pointerdown", (event) => this.handlePointerdown(event));
+        document.addEventListener("pointerdown", (event) => this._handlePointerDown(event));
         document.addEventListener("pointermove", (event) => this.handlePointermove(event));
         document.addEventListener("pointerup", (event) => this.handlePointerup(event));
         document.addEventListener("pointercancel", (event) => this.handlePointercancel(event));
         
         this._pointers = {};
     }
-    handlePointerdown(event)
+    _handlePointerDown(event)
     {
         event.preventDefault();
         let pointer = this._createPointer(event);
@@ -17,6 +17,7 @@ class MouseEvent
         
         test.target = pointer.target;
         event.diagram = pointer.target;
+        this.handlePointerDown();
     }
     handleLongPress(pointer, event)
     {
@@ -51,6 +52,7 @@ class MouseEvent
         }
 
     }
+    handlePointerDown(event){}
     handleDragStart(event){}
     handleDrag(event){}
     handlePointerMove(event){}
@@ -110,6 +112,8 @@ class MouseEvent
 
         pointer.longpress = false;
         pointer.origin = {x: event.clientX, y: event.clientY};
+
+        pointer.originalEvent = event;
 
         pointer.target.setPointerCapture(event.pointerId);
         pointer.longclickTimeout= setTimeout(()=>this.handleLongPress(pointer, event), 500);
