@@ -1,3 +1,11 @@
+import draw from "./draw.js";
+import { select, select_view } from "./select.js";
+import { diagview } from "./diagramview.js";
+import { grid_to_pos, size, grid_size } from "./grid.js";
+import Tableview from "./tableview.js";
+import LineView from "./lineview.js";
+import ContainerView from "./containerview.js";
+
 function init()
 {
     diagview = new Diagramview();
@@ -49,10 +57,10 @@ function init()
  *=================================*/
  
 
-function move_element(id, x, y, grid = false)
+ export function move_element(id, x, y, grid = true)
 {
     try {
-        if(grid == true)
+        if(grid)
         {
             x = grid_to_pos(x);
             y = grid_to_pos(y);
@@ -65,9 +73,9 @@ function move_element(id, x, y, grid = false)
     draw();
 }
 
-function move_container(id, x, y, grid = false)
+export function move_container(id, x, y, grid = true)
 {
-    if(grid == true)
+    if(grid)
     {
         x = grid_to_pos(x);
         y = grid_to_pos(y);
@@ -77,10 +85,10 @@ function move_container(id, x, y, grid = false)
 }
 
 
-function resize_conainer(id, width, height)
+export function resize_conainer(id, width, height)
 {
     if(diagview.get_container(id) == null) return;
-    diagview.get_container(id).resize(width, height);
+    diagview.get_container(id).resize(grid_size(width), grid_size(height));
     draw();
 }
 
@@ -89,48 +97,48 @@ function resize_conainer(id, width, height)
  *=================================
  */
  
- function remove_element(id)
+ export function remove_element(id)
  {
      diagview.remove_element(id);
      draw();
  }
 
-function add_element(id, title, x, y, containerId, grid = true, start = false)
+ export function add_element(id, title, type, x, y, containerId, start = false)
 {
-    if(grid)
-    {
-        x = grid_to_pos(x);
-        y = grid_to_pos(y);
-    }
+    x = grid_to_pos(x);
+    y = grid_to_pos(y);
     if(start)
     {
         set_start(id);
     }
-    let tableview = new Tableview(id, title, x, y, size, size);
+    let tableview = new Tableview(id, title, type, x, y, size, size);
     let container = diagview.get_container(containerId);
     if(container)
     {
         container.add(tableview);
     }
     diagview.add_element(tableview);
+    select_view(tableview);
     draw();
 }
 
-function add_container(id, title, x, y, width, height, grid = false)
+export function add_container(id, title, x, y, width, height, containerId)
 {
-    if(grid)
+    x = grid_to_pos(x);
+    y = grid_to_pos(y);
+    let element = new ContainerView(id, title, "standard", x, y, grid_size(width), grid_size(height));
+    let container = diagview.get_container(containerId);
+    if(container)
     {
-        x = grid_to_pos(x);
-        y = grid_to_pos(y);
+        container.add(element);
     }
-    let container = new ContainerView(id, title, "standard", x, y, width, height);
-    diagview.add_element(container);
+    diagview.add_element(element);
     draw();
 }
 
-function add_relation(pId, pStartId, pEndId, pType)
+export function add_relation(pId, pStartId, pEndId, pType, pTitle)
 {
-    let line = new LineView(pId, pStartId, pEndId, pType)
+    let line = new LineView(pId, pStartId, pEndId, pType, pTitle)
     diagview.add_element(line);
     draw();
 }

@@ -1,4 +1,4 @@
-const size = 200;
+export const size = 200;
 
 
 function attach_to_grid(value)
@@ -23,3 +23,5 @@ function grid_size(value)
 {
     return value * size;
 }
+
+export {attach_to_grid, pos_to_grid, grid_to_pos, grid_size};

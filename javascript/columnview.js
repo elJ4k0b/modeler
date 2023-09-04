@@ -12,3 +12,5 @@ class ColumnView
         this.selected = false;
     }
 }
+
+export default ColumnView;

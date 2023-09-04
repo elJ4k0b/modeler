@@ -1,4 +1,5 @@
 const SCALING_CONSTANT = 0.0005;
+const DEFAULT_VIEWPORT_OFFSET = -50000;
 const MAX_ZOOM = 4;
 const MIN_ZOOM = 0.2;
 const SCROLL_SPEED = 20;
@@ -30,7 +31,6 @@ class ZoomHandler
         if(event.ctrlKey)
         {
             newViewportMatrix = this._zoom(currentViewportMatrix, scrollDelta, event);
-            //newTransformOrigin = this._calculateOrigin(event);
         }
         else if(event.shiftKey)
         {
@@ -57,10 +57,9 @@ class ZoomHandler
         matrix.f -= delta;
         return matrix;
     }
-    _zoom(matrix, delta, e)
+    _zoom(matrix, delta, event)
     {
         let newZoom = this.zoomFactor;
-        let eventRegistry = this.eventRegistry;
         let center = this.viewportCenter;
 
         //calculate zoom factor
@@ -72,11 +71,11 @@ class ZoomHandler
         matrix.d = newZoom;
 
         //apply offset
-        let xs = (e.clientX - center.x) / this.zoomFactor;
-        let ys = (e.clientY - center.y) / this.zoomFactor;
+        let xs = (event.clientX - center.x) / this.zoomFactor;
+        let ys = (event.clientY - center.y) / this.zoomFactor;
         
-        center.x = e.clientX - xs * newZoom;
-        center.y = e.clientY - ys * newZoom;
+        center.x = event.clientX - xs * newZoom;
+        center.y = event.clientY - ys * newZoom;
 
         this.viewportCenter.x = center.x;
         this.viewportCenter.y = center.y;
@@ -86,27 +85,18 @@ class ZoomHandler
 
         this.zoomFactor = newZoom;
         return matrix;
-    } 
-
-    _calculateOrigin(event)
-    {
-        let mousePosX = event.pageX;
-        let mousePosY = event.pageY;
-
-        let rect = this.viewport.getBoundingClientRect();
-        let offsetX = (mousePosX - rect.left + window.scrollX) / rect.width * 100;
-        let offsetY = (mousePosY - rect.top + window.scrollY) / rect.height * 100;
-
-        this.lastMousePosX = mousePosX;
-        this.lastMousePosY = mousePosY;
-      
-        return `${offsetX}% ${offsetY}%`;
     }
-
     _applyMatrix(element, matrix)
     {
-        element.setAttribute("transform", matrix.toString());
-        element.style.transform = matrix.toString();
+        try {
+            element.setAttribute("transform", matrix.toString());
+            element.style.transform = matrix.toString();
+        }catch (error)
+        {
+            console.log(error);
+            console.log(matrix);
+        }
+        
     }
     
     _getMatrix(element)
@@ -124,110 +114,123 @@ class ZoomHandler
     _scroll(stepsize, dist)
     {
         this.scrolling = true;
+
         let matrix = this._getMatrix(this.viewport);
         let target = this.scrollTarget;
+
         if(dist.x == 0 && dist.y == 0)
         {
             this.scrolling = false;
             return;
         }
         
+        //Calculate scroll direction
         stepsize.x = Math.abs(stepsize.x) * Math.sign(dist.x); 
         stepsize.y = Math.abs(stepsize.y) * Math.sign(dist.y);
+
+        let currentDistance = {x: matrix.e - target.x, y: matrix.f - target.y};
         
 
-        if(Math.abs(matrix.e - target.x) > Math.abs(stepsize.x) )
+        if(Math.abs(currentDistance.x) > Math.abs(stepsize.x) )
         { 
             matrix = this._horizontalScroll(matrix, stepsize.x);
         }
         else
         {
-            matrix = this._horizontalScroll(matrix, matrix.e - target.x);
+            matrix = this._horizontalScroll(matrix, currentDistance.x);
         }
-        if(Math.abs(matrix.f - target.y) > Math.abs(stepsize.y))
+
+        if(Math.abs(currentDistance.y) > Math.abs(stepsize.y))
         {
             matrix = this._verticalScroll(matrix, stepsize.y);
         } 
         else
         {
-            matrix = this._verticalScroll(matrix, matrix.f - target.y);
+            matrix = this._verticalScroll(matrix, currentDistance.y);
         }
 
         this._applyMatrix(this.viewport, matrix);
         
 
         //break if nothing happens
-        let currDist = {x: matrix.e - target.x, y: matrix.f - target.y};
-        if(dist.x == currDist.x && dist.y == currDist.y)
+        if(dist.x == currentDistance.x && dist.y == currentDistance.y)
         {
             this.scrolling = false;
             return;
         }
-        requestAnimationFrame(() => {this._scroll(stepsize, currDist)});
+        requestAnimationFrame(() => {this._scroll(stepsize, currentDistance)});
     }
 
-    scroll_smooth(target)
+    scrollTo(target, smooth = true)
     {
-        console.log("Target");
-        console.log(target);
-        let matrix = this._getMatrix(this.viewport);
-        // let realDistX = (target.x + ((50000 + matrix.e))); 
-        // let realDistY = (target.y + ((50000 + matrix.f)));
+        let targetCenter = {};
+        targetCenter.x = this.viewportCenter.x;
+        targetCenter.y = this.viewportCenter.y;
 
-        // console.log(matrix.e);
-        // console.log(matrix.f);
+        let windowCenter = {};
+        windowCenter.x = window.innerWidth / 2;
+        windowCenter.y = window.innerHeight / 2;
 
-        // console.log("start target")
-        // console.log(target);
+        targetCenter.x = windowCenter.x - target.x * this.zoomFactor;
+        targetCenter.y = windowCenter.y - target.y * this.zoomFactor;
 
-        // console.log("realDist")
-        // console.log(realDistX);
-        // console.log(realDistY);
-        // target = {x: matrix.e - realDistX, y: matrix.f - realDistY};
+        target.x = targetCenter.x + DEFAULT_VIEWPORT_OFFSET;
+        target.y = targetCenter.y + DEFAULT_VIEWPORT_OFFSET;
 
-        // console.log("target")
-        // console.log(target);
+        let dist = {};
+        dist.x = target.x - targetCenter.x;
+        dist.y = target.y - targetCenter.y;
 
-        console.warn(this.viewportCenter.x);
-        
+        //customize scrollspeed here
+        let stepsize = {};
+        smooth? stepsize.x = this.scrollSpeed: stepsize.x = dist.x;
+        smooth? stepsize.y = this.scrollSpeed: stepsize.y = dist.y; 
 
-        let centerX = this.viewportCenter.x;
-        let centerY = this.viewportCenter.y;
-        console.log("center");
-        console.log(this.viewportCenter.x);
-        console.log(this.viewportCenter.y);
-
-
-        console.log("matrix")
-        console.log(matrix);
-        
-        let xs = target.x// + centerX);
-        let ys = target.y// + centerY);
-
-        console.log("offset");
-        console.log(xs);
-        console.log(ys);
-
-
-        //console.log("target1");
-        target = {x: matrix.e - xs, y: matrix.f - ys};
-        console.log(target);
-
-
-
-        let diffX = matrix.e*this.zoomFactor - target.x;
-        let diffY = matrix.f*this.zoomFactor - target.y;
-        //console.log("target2");
-        console.log(target);
-
-        
-
-
-
-        let stepsize = {x: this.scrollSpeed, y: this.scrollSpeed};
         this.scrollTarget = target;
-        //if(!this.scrolling) requestAnimationFrame(() => {this._scroll(stepsize, {x:diffX, y: diffY})});
+        if(!this.scrolling) requestAnimationFrame(() => {this._scroll(stepsize, dist)});
+    }
+
+    setScale(scale, center)
+    {
+        let eventDummy = {};
+        eventDummy.clientX = center.x;
+        eventDummy.clientY = center.y;
+
+        let matrix =  this._getMatrix(this.viewport);
+        let delta = scale - this.zoomFactor;
+        this._zoom(matrix, delta, eventDummy);
+    }
+
+    start_pan(event)
+    {
+        console.log("startpan");
+        let start = {};
+        start.x = event.clientX;
+        start.y = event.clientY;
+
+        this.panstart = start;
+
+    }
+
+    end_pan()
+    {
+
+    }
+
+    pan(event)
+    {
+        console.log("pan");
+        let delta = {};
+        let matrix = this._getMatrix(this.viewport);
+        delta.x = event.clientX - this.panstart.x;
+        delta.y = event.clientY - this.panstart.y;
+
+        this.panstart.x = event.clientX;
+        this.panstart.y = event.clientY;
         
+        matrix = this._horizontalScroll(matrix, -delta.x);
+        matrix = this._verticalScroll(matrix, -delta.y);
+        this._applyMatrix(this.viewport, matrix);
     }
 }
 

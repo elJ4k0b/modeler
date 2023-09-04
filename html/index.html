@@ -6,7 +6,7 @@
 	<!--
     <meta name="viewport" content="width=device-width, target-densitydpi=device-dpi, initial-scale=0.1, maximum-scale=10.0, minimum-scale=0.1, user-scalable=yes"/>
 	-->
-	<meta name="viewport" content="width=device-width, target-densitydpi=device-dpi, initial-scale=0.2, maximum-scale=10.0, minimum-scale=0.1, user-scalable=yes"/>
+	<meta name="viewport" content="width=device-width, target-densitydpi=device-dpi, initial-scale=1, maximum-scale=10.0, minimum-scale=0.1, user-scalable=no"/>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -15,6 +15,7 @@
 
     
     <link href="../css/style.css" rel="stylesheet">
+    <!--
     <script src="../javascript/main_test.js"></script>
     <script src="../javascript/diagramview.js"></script>
     <script src="../javascript/tableview.js"></script>
@@ -25,7 +26,8 @@
     <script src="../javascript/containerview.js"></script>
     <script src="../javascript/generator.js"></script>
     <script src="../javascript/API.js"></script>
-    <script src="../javascript/diagram-element.js"></script>
+    <script src="../javascript/diagram-element.js"></script>-->
+    <script src="../javascript/main_new.js" type="module"></script>
 </head>
 <body>
     <!--===================================-->
@@ -59,15 +61,15 @@
     <!--===================================-->
     <!--element canvases-->
     <!--===================================-->
-
-    <svg id="svg" width="100%" height="100%" style="position:absolute; z-index: 2; pointer-events: none;" tabindex="-1">
-
-    </svg>
-    <svg id="overlay" min-width="100vw" min-height="100vh" style="position:absolute; z-index: 5; pointer-events: none;" fill = "none">
-
-    </svg>
-    <div id="canvas">
-
+    <div id="viewport">
+        <svg id="svg" width="100%" height="100%" style="position:absolute; z-index: 2; pointer-events: none;" tabindex="-1">
+        </svg>
+        <svg id="overlay" min-width="100vw" min-height="100vh" style="position:absolute; z-index: 5; pointer-events: none;" fill = "none">
+    
+        </svg>
+        <div id="canvas">
+    
+        </div>
     </div>
     <svg style="position: absolute; z-index: -2; width: 100%; height: 100%; top: 0px; left: 0px;">
         <path id="select" stroke-dasharray="2,10" stroke-width="4" stroke="#71747A" fill="none" stroke-linecap="round"></path>
@@ -78,7 +80,6 @@
     </svg>
 
     <script>
-        init();
     </script>
 </body>
 </html>

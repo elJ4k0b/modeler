@@ -1,9 +1,10 @@
 class Tableview
 {
-    constructor(pId, pTitle, pLeft, pTop,  pWidth, pHeight)
+    constructor(pId, pTitle, pType, pLeft, pTop,  pWidth, pHeight)
     {
         this.title = pTitle;
         this.id = pId;
+        this.type = pType;
         this.selected = false;
         this.position  = {
             top: pTop,
@@ -42,3 +43,5 @@ class Tableview
         }
     }
 }
+
+export default Tableview;

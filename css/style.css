@@ -10,9 +10,10 @@ svg:not(:root) {
 * {
     box-sizing: border-box;
     scroll-behavior: smooth;
+    touch-action: none !important;
 }
 
-body {
+#viewport {
    background-image: radial-gradient(#ccc 10%, transparent 10%),
      radial-gradient(#ccc 10%, transparent 10%);
    background-color: #fff;
@@ -171,4 +172,8 @@ diagram-element {
 
 .shadow-small {
     box-shadow: 0 0 0.3rem rgba(0, 0, 0, 0.1);
+}
+
+#container {
+    overflow: visible !important;
 }

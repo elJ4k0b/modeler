@@ -1,3 +1,8 @@
+import Tableview from "./tableview.js";
+import ContainerView from "./containerview.js";
+import LineView from "./lineview.js";
+
+
 class Diagramview {
     constructor()
     {
@@ -54,7 +59,8 @@ class Diagramview {
                 this.lineviews.set(element.id, element);
                 break;
             case Tableview:
-                if(this.startElement != null)
+                this.tableviews.set(element.id, element);
+                /*if(this.startElement != null)
                 {
                     let id = Math.max(...this.lineviews.keys(), -1)+1;
                     let newLine = new LineView (id, this.startElement.id,  element.id, "standard");
@@ -65,7 +71,7 @@ class Diagramview {
                 {
                     this.tableviews.set(element.id, element);
                     this.set_start(element.id);
-                }
+                }*/
                 
                 break;
             default:
@@ -146,3 +152,5 @@ class Diagramview {
         element.dragged = bool;
     }
 }
+
+export const diagview = new Diagramview();

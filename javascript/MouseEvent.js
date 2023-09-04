@@ -11,6 +11,7 @@ class MouseEvent
     }
     handlePointerdown(event)
     {
+        event.preventDefault();
         let pointer = this._createPointer(event);
         let test =  JSON.parse(JSON.stringify(event)); 
         
@@ -23,6 +24,7 @@ class MouseEvent
     }
     handlePointermove(event)
     {
+        event.preventDefault();
         let pointer = this._pointers[event.pointerId];
 
         if(!pointer) return;
@@ -31,6 +33,8 @@ class MouseEvent
         movementDelta.x = pointer.origin.x - event.clientX;
         movementDelta.y = pointer.origin.y - event.clientY;
 
+        pointer.originalEvent = event;
+
         if(!pointer.drag)
         {
             if(Math.abs(movementDelta.x) > 10 || Math.abs(movementDelta.y) > 10)
@@ -38,9 +42,8 @@ class MouseEvent
                 pointer.drag = true;
                 clearTimeout(pointer.longclickTimeout);   
                 document.body.style.cursor = "grabbing";
-                this.handleStartDrag();
-            }
-            
+                this.handleDragStart(event);
+            }        
         }
         else
         {
@@ -48,7 +51,7 @@ class MouseEvent
         }
 
     }
-    handleStartDrag(event){}
+    handleDragStart(event){}
     handleDrag(event){}
     handlePointerMove(event){}
     handleDragEnd(event){}
@@ -56,6 +59,7 @@ class MouseEvent
 
     handlePointerup(event)
     {
+        event.preventDefault();
         let pointers = this._pointers;
         let pointer = pointers[event.pointerId];
 
@@ -64,7 +68,7 @@ class MouseEvent
         if(!pointer.longpress)
         {
             clearTimeout(pointer.longclickTimeout);  
-            handleClick(event); 
+            this.handleClick(event); 
         }
 
         if(pointer.drag){
@@ -76,9 +80,9 @@ class MouseEvent
         pointer.target.releasePointerCapture(event.pointerId);
         delete pointers[event.pointerId];
     }
-    handlePointercancel()
+    handlePointercancel(event)
     {
-
+        this.handlePointerup(event);
     }
 
     setPointerTarget(pointerId, element)
@@ -100,6 +104,7 @@ class MouseEvent
         event.preventDefault();
         let pointer = {};
         this._pointers[event.pointerId] = pointer;
+        console.log(event.pointerId);
 
         pointer.target = event.target.closest('[id*="diagram"]') || event.target;
 
@@ -124,3 +129,4 @@ class MouseEvent
     }
 }
 
+export default MouseEvent;

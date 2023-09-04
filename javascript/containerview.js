@@ -1,6 +1,6 @@
 class ContainerView
 {
-    constructor(pId,  pTitle, pType, pX, pY,  pWidth, pHeight)
+    constructor(pId, pTitle, pType, pX, pY,  pWidth, pHeight)
     {
         this.id = pId; 
         this.position = {
@@ -52,7 +52,8 @@ class ContainerView
         if(height > this.minHeight)
         {
             this.dimension.height = height;
-        }
-        
+        }    
     }
 }
+
+export default ContainerView;

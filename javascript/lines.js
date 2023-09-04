@@ -4,7 +4,7 @@ const STANDARD_STYLE = {
 }
 
 
-function drawline_at(x1, y1, x2, y2, style = STANDARD_STYLE)
+export function drawline_at(x1, y1, x2, y2, style = STANDARD_STYLE)
 {
     x1 = parseInt(x1);
     y1 = parseInt(y1);
