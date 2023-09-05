@@ -11,6 +11,7 @@ class Diagramview {
         this.containers = new Map();
         this.elements = new Map();
         this.changelog = new Array();
+        this.selected_elements = new Map();
         this.prevStartElement = null;
         this.startElement  = null;
     }
@@ -143,6 +144,12 @@ class Diagramview {
         let element = this.elements.get(id);
         if(!element){return}
         element.selected = bool;
+        bool? this.selected_elements.set(id, element): this.selected_elements.delete(id);
+    }
+
+    get_selected_elements()
+    {
+        return this.selected_elements.values();
     }
 
     drag(id, bool)
