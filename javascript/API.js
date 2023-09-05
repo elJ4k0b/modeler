@@ -111,8 +111,8 @@ export function resize_conainer(id, width, height)
     {
         set_start(id);
     }
-    let tableview = new Tableview(id, title, type, x, y, size, size);
     let container = diagview.get_container(containerId);
+    let tableview = new Tableview(id, title, type, x, y, size/2, size/2, container);
     if(container)
     {
         container.add(tableview);
@@ -126,8 +126,8 @@ export function add_container(id, title, x, y, width, height, containerId)
 {
     x = grid_to_pos(x);
     y = grid_to_pos(y);
-    let element = new ContainerView(id, title, "standard", x, y, grid_size(width), grid_size(height));
     let container = diagview.get_container(containerId);
+    let element = new ContainerView(id, title, "standard", x, y, grid_size(width), grid_size(height), container);
     if(container)
     {
         container.add(element);
@@ -136,9 +136,40 @@ export function add_container(id, title, x, y, width, height, containerId)
     draw();
 }
 
-export function add_relation(pId, pStartId, pEndId, pType, pTitle)
+export function add_relation(pId, pTitle, pType, pStartId, pEndId)
 {
     let line = new LineView(pId, pStartId, pEndId, pType, pTitle)
     diagview.add_element(line);
     draw();
+}
+
+export function set_title(id, title)
+{
+    let element = _try_get(id);
+    element.title = title;
+    draw();
+}
+
+export function add_to_container(id, containerid)
+{
+	 let element = _try_get(id);
+     let container = _try_get(containerid);
+     if(!element || !container) throw new Error("element or container with id " + id + " not found.");
+     container.add(element);
+     element.container = container;
+}
+
+export function remove_from_container(id, containerid)
+{
+	 let element = _try_get(id);
+     let container = _try_get(containerid);
+     container.remove(element);
+     element.container = null;
+}
+
+function _try_get(id)
+{  
+    let element = diagview.get_element(id);
+    if(!element) throw new Error("element with id " + id + " not found.");
+    return element;
 }
