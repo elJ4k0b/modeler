@@ -18,8 +18,6 @@ const TOOLS = {
 
 function switch_tool(tool)
 {
-    console.log("switching tool to" + tool);
-    //if(tool != TOOLS.zoom) zoomHandler.viewport.style.backgroundColor = "red";
     switch(tool) 
     {
         case (TOOLS.select):
@@ -50,6 +48,7 @@ class CustomEvents extends MouseEvent
 
     handleClick(event)
     {
+        if(selected_tool == TOOLS.scale) return;
         select(event);
     }
     handleLongPress(pointer, event)
@@ -71,7 +70,6 @@ class CustomEvents extends MouseEvent
         let target = event.target;
         if(Object.keys(this._pointers).length >= 2)
         {
-            console.log("Hallo wir zoomend jetzt");
             if(selected_tool != TOOLS.zoom)
             {
                 switch_tool(TOOLS.zoom);
@@ -80,15 +78,14 @@ class CustomEvents extends MouseEvent
             return;
         }else if(target.id == "viewport")
         {
-            console.log("viewport")
             switch_tool(TOOLS.scroll);
             zoomHandler.start_pan(event);
             return;
         }
-        console.log("nicht viewport");
         target.classList.remove("transition-move");
         switch_tool(TOOLS.drag);
-        if(target.classList.contains("visual")) switch_tool(TOOLS.scale);
+        console.log(target.classList.contains("toucharea"));
+        if(target.classList.contains("visual") || target.classList.contains("toucharea")) switch_tool(TOOLS.scale);
         selected_tool == TOOLS.scale ? startscale(event):startdrag(event);
     }
     handleDrag(event)
