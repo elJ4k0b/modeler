@@ -1,5 +1,5 @@
 const STANDARD_STYLE = {
-    stroke: "6",
+    stroke: "8",
     color: "#295FF4"
 }
 
