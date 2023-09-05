@@ -1,5 +1,7 @@
+import zoomHandler from "./Zoom.js";
 import { diagview } from "./diagramview.js";
 import draw from "./draw.js";
+import { grid_size } from "./grid.js";
 
 //Functions that handle the scaling of elements
 
@@ -7,9 +9,15 @@ let scaledElements = [];
 let scaleStartX = 0;
 let scaleStartY = 0;
 let scalePoint = 0;
+let offset = {};
 
-export function startscale(event, elements, index)
+export function startscale(event)
 {
+    let index = event.target.getAttribute("scaling-index");
+    console.log(event.target);
+    console.log(event.target.getAttribute("scaling-index"));
+
+
     if(event.type == "touchstart")
     {
         event.preventDefault();
@@ -19,32 +27,28 @@ export function startscale(event, elements, index)
     {
         event.preventDefault();
     }
-    
-    scaledElements.push(elements);
 
     //Only for circle scaling nobs
     let currPosX = event.target.getAttribute("cx");
     let currPosY = event.target.getAttribute("cy");
 
-    offset.x = event.clientX - parseInt(currPosX);
-    offset.y = event.clientY - parseInt(currPosY);
+    offset.x = event.clientX/zoomHandler.zoomFactor - parseInt(currPosX);
+    offset.y = event.clientY/zoomHandler.zoomFactor - parseInt(currPosY);
     
-    scaleStartX = event.clientX;
-    scaleStartY = event.clientY;
-    scalePoint = index;
+    scaleStartX = event.clientX/zoomHandler.zoomFactor;
+    scaleStartY = event.clientY/zoomHandler.zoomFactor;
+    scalePoint = parseInt(index);
 }
 
 export function scale(event)
 {
-    
+    scaledElements = diagview.get_selected_elements();
     if(scaledElements == null) return;
 
-    if(event.type == "touchmove")
-    {
-        event = event.targetTouches[0];
-    }
-    let deltaSizeX = event.clientX - scaleStartX;
-    let deltaSizeY = event.clientY - scaleStartY;
+    let mousepos = {x: event.clientX/zoomHandler.zoomFactor, y: event.clientY/zoomHandler.zoomFactor};
+    
+    let deltaSizeX = mousepos.x - scaleStartX;
+    let deltaSizeY = mousepos.y - scaleStartY;
 
     for(let element of scaledElements)
     {
@@ -53,6 +57,7 @@ export function scale(event)
 
         let newX = 0;
         let newY = 0;
+        element.dragged = true;
         //Scailing the element around its center;
         switch(scalePoint)
         {
@@ -60,15 +65,15 @@ export function scale(event)
                 newWidth = element.dimension.width - deltaSizeX;
                 newHeight = element.dimension.height - deltaSizeY;
                 
-                newX = event.clientX - offset.x;
-                newY = event.clientY - offset.y;
+                newX = mousepos.x - offset.x;
+                newY = mousepos.y - offset.y;
                 break;
             case 1:              
                 newWidth = element.dimension.width + deltaSizeX;
                 newHeight = element.dimension.height - deltaSizeY;                    
                 
                 newX = element.position.left;
-                newY = event.clientY - offset.y;
+                newY = mousepos.y - offset.y;
                 break;
             case 2:               
                 newWidth = element.dimension.width + deltaSizeX;
@@ -81,24 +86,20 @@ export function scale(event)
                 newWidth = element.dimension.width - deltaSizeX;
                 newHeight = element.dimension.height + deltaSizeY;
 
-                newX = event.clientX - offset.x;
+                newX = mousepos.x - offset.x;
                 newY = element.position.top;
                 break;
             default:
                 return;
         }
-        if(newHeight > element.minHeight+20)
-        {
-            diagview.move(element.id, element.position.left, newY)
-            resize_conainer(element.id, element.dimension.width, newHeight);
-            scaleStartY = event.clientY;
-        }
-        if(newWidth > element.minWidth+20)
-        {
-            diagview.move(element.id, newX, element.position.top);
-            resize_conainer(element.id, newWidth, element.dimension.height);
-            scaleStartX = event.clientX;
-        }
+        console.log("pos");
+        console.log(newX + ", " + newY);
+        console.log("dim");
+        console.log(newWidth + ", " +  newHeight);
+        element.resize(newWidth, newHeight, newX, newY);
+        scaleStartY = mousepos.y;
+        scaleStartX = mousepos.x;
+        draw();
     }
 }
 

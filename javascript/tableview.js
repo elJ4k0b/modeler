@@ -1,8 +1,9 @@
 class Tableview
 {
-    constructor(pId, pTitle, pType, pLeft, pTop,  pWidth, pHeight)
+    constructor(pId, pTitle, pType, pLeft, pTop,  pWidth, pHeight, pContainer)
     {
         this.title = pTitle;
+        this.container = pContainer;
         this.id = pId;
         this.type = pType;
         this.selected = false;
@@ -38,6 +39,7 @@ class Tableview
     {
         if(!this.locked)
         {
+            if(this.container) this.container.update_bounds(this);
             this.position.top = top;
             this.position.left = left;
         }
