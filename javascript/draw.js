@@ -1,6 +1,7 @@
 import { diagview } from "./diagramview.js";
 import { drawline_at } from "./lines.js";
 import { grid_size } from "./grid.js";
+import zoomHandler from "./Zoom.js";
 
 const CANVAS_WIDTH = 100000;
 
@@ -20,8 +21,10 @@ function draw_container(container, div = document.createElement("div"))
 
     div.id = container.id;
     div.style.position = "absolute";
-    div.style.top = `${container.position.top}px`;
-    div.style.left = `${container.position.left}px`;
+    let matrix  = `matrix(${1}, ${0}, ${0}, ${1}, ${container.position.left}, ${container.position.top})`;
+    div.style.transform = matrix;
+    // div.style.top = `${container.position.top}px`;
+    // div.style.left = `${container.position.left}px`;
     div.style.width = `${container.dimension.width}px`;     
     div.style.height = `${container.dimension.height}px`;
     div.style.padding = "0px";
@@ -59,81 +62,30 @@ function draw_element(tableview, div = document.createElement("div"))
     div.classList.add("draggable");
     div.classList.add("card");
     div.classList.add("shadow-medium");
-    div.classList.add("transition-move");
     div.id = tableview.id;
     div.style.position = "absolute";
-    div.style.top = `${tableview.position.top}px`;
-    div.style.left = `${tableview.position.left}px`;
+    let matrix  = `matrix(${1}, ${0}, ${0}, ${1}, ${tableview.position.left}, ${tableview.position.top})`;
+    div.style.transform = matrix;
+
+    // div.style.top = `${tableview.position.top}px`;
+    // div.style.left = `${tableview.position.left}px`;
     div.style.width = `${tableview.dimension.width}px`;//`${grid_size(1)}px`;     
     div.style.height = `${tableview.dimension.height}px`;//`${grid_size(1)}px`;
     div.style.padding = "5px";
     div.style.zIndex = "2";
     
-    //let popover = div.querySelector(".popover") || attach_popover(div);
-    
     if(tableview.dragged)
     {
         div.classList.remove("transition-move");
     }
-    /*if(tableview.selected)
-    {   
-        popover.classList.remove("popover-shrunken");
-        popover.style.visibility = "visible";
-        popover.style.transform = ` scale(max(${1/visualViewport.scale}, 1)) translate(-50%, -100%)`;
-        for(let child of popover.childNodes)
-        {
-            if(child.nodeType == 1)
-            {
-                child.style.display = "flex";
-            }
-        }
-        popover.style.opacity = "0";
-        requestAnimationFrame(function() {
-            popover.style.opacity = "1";
-            popover.style.maxWidth = "";
-        });
-
-        if(tableview.locked)
-        {
-            popover.querySelector(".lock").classList.add("icon-locked");
-        }
-        else
-        {
-            popover.querySelector(".lock").classList.remove("icon-locked");
-        }
-        requestAnimationFrame(function() {
-            popover.style.opacity = "1";
-          });
-    }
-    else if(tableview.locked)
-    {
-        popover.style.visibility = "visible"
-        popover.style.opacity = "1";
-        popover.querySelector(".lock").classList.add("icon-locked");
-        popover.classList.add("popover-shrunken");
-        maxWidth = popover.querySelector(".lock").offsetWidth;
-        for(let child of popover.childNodes)
-        {
-            if(child.nodeType == 1 && !child.classList.contains("lock"))
-            {
-                child.style.display = "none";
-            }
-        }
-        
-    }
-    else
-    {
-        //popover.style.opacity = 0;
-    }*/
+    
     if(tableview == diagview.startElement)
     {
-        //popover.querySelector(".flag").classList.add("icon-locked");
         div.classList.remove("shadow-medium");
         div.classList.add("card-start"); 
     }
     else
     {
-        //popover.querySelector(".flag").classList.remove("icon-locked");
         div.classList.remove("card-start");
     }
     return div;
@@ -141,14 +93,13 @@ function draw_element(tableview, div = document.createElement("div"))
 
 export function delete_element(event, popover)
 {
-    //remove_element(popover.getAttribute("parentId"));
     draw();
 }
 
 function draw_canvas()
 {
     let canvas = document.getElementById("canvas");
-    canvas.style.transform = "matrix(1, 0, 0, 1, 50000, 50000)";
+    //canvas.style.transform = "matrix(1, 0, 0, 1, 50000, 50000)";
     /*
     * STRUCTURING THE CANVAS
     * As position absolute is relative to the parent element, nested element position data is displayed wrong. There are two options to solve this issue.
@@ -195,9 +146,6 @@ function draw_canvas()
                 draw_overlay(tableview);
             }
         })
-        
-        //maxHeight = Math.max(tableview.dimension.height + tableview.position.top + 200, maxHeight, canvas.offsetHeight);
-        //maxWidth = Math.max(tableview.dimension.width + tableview.position.left + 200, maxWidth, canvas.offsetWidth);
     }
 
 
@@ -209,10 +157,6 @@ function draw_canvas()
             canvas.removeChild(node);
         }
     }
-    
-
-    //canvas.style.width = `${maxWidth}px`;
-    //canvas.style.height = `${maxHeight}px`;
 }
 
 function draw_overlay() {
@@ -235,7 +179,7 @@ function draw_overlay() {
     
                 let overlay = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
                 overlay.setAttribute("fill", "none")
-                overlay.setAttribute("stroke", "#295FF4");
+                overlay.setAttribute("stroke", "#26A4FF"); //#295FF4
                 group.appendChild(overlay);
     
                 for(let i = 0; i < 4; i++)
@@ -243,12 +187,14 @@ function draw_overlay() {
                     let circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
                     circle.setAttribute("fill", "#76C2F1");
                     circle.classList.add("visual");
+                    circle.setAttribute("scaling-index", i);
 
                     let toucharea = document.createElementNS("http://www.w3.org/2000/svg", "circle");
                     toucharea.classList.add("toucharea");
                     toucharea.setAttribute("fill", "transparent");
                     toucharea.style.pointerEvents = "all";
                     toucharea.style.touchAction = "none";
+                    toucharea.setAttribute("scaling-index", i);
 
                     let circleGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
                     circleGroup.appendChild(circle);
@@ -263,7 +209,7 @@ function draw_overlay() {
             let bottomRight = `${view.position.left + view.dimension.width},${view.position.top + view.dimension.height}`;
             let overlay = group.querySelector("polygon");
             overlay.setAttribute("points", `${topLeft} ${topRight} ${bottomRight} ${bottomLeft}`);
-            overlay.setAttribute("stroke-width", ` ${1 * (1/window.visualViewport.scale)}px`);
+            overlay.setAttribute("stroke-width", "6")//` ${1 * (1/window.visualViewport.scale)}px`);
             let points = overlay.getAttribute("points").split(" ");
 
             for(let [index, circlegroup] of group.querySelectorAll("g").entries())
@@ -277,11 +223,11 @@ function draw_overlay() {
                 area.setAttribute("cy", coords[1]);
                 let min = 10;
                 let max = view.dimension.width/5;
-                area.setAttribute("r", Math.max(min, 30 * 1/window.visualViewport.scale));
-                area.setAttribute("r", Math.min(max, 30 * 1/window.visualViewport.scale));
+                area.setAttribute("r", Math.max(min, 30 /zoomHandler.zoomFactor));
+                area.setAttribute("r", Math.min(max, 30 /zoomHandler.zoomFactor));
                 circle.setAttribute("cx", coords[0]);
                 circle.setAttribute("cy", coords[1]);
-                circle.setAttribute("r", Math.max(10, 5 * 1/window.visualViewport.scale));
+                circle.setAttribute("r", Math.max(10, 5 /zoomHandler.zoomFactor));
             }
             maxHeight = Math.max(view.dimension.height + view.position.top, maxHeight);
             maxWidth = Math.max(view.dimension.width + view.position.left, maxWidth);
