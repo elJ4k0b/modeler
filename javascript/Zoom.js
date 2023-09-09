@@ -75,7 +75,7 @@ class ZoomHandler
 
 
         
-        if(newZoom < MIN_ZOOM || newZoom > MAX_ZOOM) return matrix;
+        newZoom = Math.min(MAX_ZOOM, Math.max(newZoom, MIN_ZOOM))
         matrix.a = newZoom;
         matrix.d = newZoom;
 
