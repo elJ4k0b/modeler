@@ -30,7 +30,7 @@ export function startdrag(event)
     let element = diagview.get_element(event.target.id);
     if(element == null){return};
 
-    diagview.select(element.id, false);
+    //diagview.select(element.id, false);
     diagview.drag(element.id, true);
     offset.x = event.clientX/zoomHandler.zoomFactor - element.position.left;
     offset.y = event.clientY/zoomHandler.zoomFactor - element.position.top;
