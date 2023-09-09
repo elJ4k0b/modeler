@@ -42,7 +42,7 @@ export function drawline_at(x1, y1, x2, y2, style = STANDARD_STYLE)
 
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.setAttribute("stroke", style.color);
-    path.setAttribute("stroke-dasharray", "4,6");
+    path.setAttribute("stroke-dasharray", "4,12");
     path.setAttribute("stroke-linejoin", "round");
     path.setAttribute("stroke-linecap", "round");
     path.setAttribute("stroke-width", style.stroke);
