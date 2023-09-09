@@ -13,18 +13,18 @@ function scroll_to_selection()
         if(diagview.is_selected(tblviewId))
         {
             let tblview = diagview.get_element(tblviewId);
-            selectionXmax = Math.max(tblview.position.left+tblview.dimension.width/2, selectionXmax)
-            selectionYmax = Math.max(tblview.position.top+tblview.dimension.height/2, selectionYmax)
+            selectionXmax = Math.max(tblview.position.left+tblview.dimension.width, selectionXmax)
+            selectionYmax = Math.max(tblview.position.top+tblview.dimension.height, selectionYmax)
 
             if(selectionYmin != 0 && selectionXmin != 0)
             {
-                selectionXmin = Math.min(tblview.position.left + tblview.dimension.width/2, selectionXmin);
-                selectionYmin = Math.min(tblview.position.top + tblview.dimension.height/2, selectionYmin);
+                selectionXmin = Math.min(tblview.position.left, selectionXmin);
+                selectionYmin = Math.min(tblview.position.top, selectionYmin);
             }
             else
             {
-                selectionXmin = tblview.position.left + tblview.dimension.width/2;
-                selectionYmin = tblview.position.top + tblview.dimension.height/2;
+                selectionXmin = tblview.position.left;
+                selectionYmin = tblview.position.top;
             }
         }
     }
@@ -33,7 +33,19 @@ function scroll_to_selection()
     let midX = selectionWidth/2 + selectionXmin
     let midY = selectionHeight/2 + selectionYmin;
 
-    let target = {x: midX, y: midY};    
+    
+    let toWide = selectionWidth * zoomHandler.zoomFactor > window.innerWidth;
+    let toHigh = selectionHeight * zoomHandler.zoomFactor > window.innerHeight;
+    if(toWide || toHigh)
+    {
+        let xScale = window.innerWidth/(selectionWidth*1.2);
+        let yScale = window.innerHeight/(selectionHeight*1.2);
+        let desiredScale = Math.min(xScale, yScale); 
+        zoomHandler.setScale(zoomHandler.zoomFactor / desiredScale, {x: midX, y: midY});
+    }
+
+
+    let target = {x: midX, y: midY};
     zoomHandler.scrollTo(target, true);
 }
 
@@ -41,17 +53,22 @@ function scroll_to_selection()
 export function select(event)
 {
     let element = diagview.get_element(event.target.id);
+    console.log(event.target.id);
+    console.log(element);
     
     if(!event.ctrlKey)
     {
         for(let elemId of diagview.elements.keys())
         {
+            if(element && elemId == element.id) continue;
             diagview.select(elemId, false);   
         }
     }
+    draw();
     if(!element) return;
-    diagview.select(element.id, !diagview.is_selected(element.id));
-    scroll_to_selection();
+    let already_selected = diagview.is_selected(element.id);
+    diagview.select(element.id, !already_selected);
+    if(!already_selected) scroll_to_selection();
     draw();
 }
 
