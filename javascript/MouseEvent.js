@@ -67,18 +67,18 @@ class MouseEvent
 
         this._pointerup(event);
 
-        if(!pointer.longpress)
-        {
-            clearTimeout(pointer.longclickTimeout);  
-            this.handleClick(event); 
-        }
-
+        
         if(pointer.drag){
             console.log("dragend");
             document.body.style.cursor = "Default";
             this.handleDragEnd(event);
         } 
-
+        
+        if(!pointer.longpress)
+        {
+            clearTimeout(pointer.longclickTimeout);  
+            this.handleClick(event); 
+        }
         pointer.target.releasePointerCapture(event.pointerId);
         delete pointers[event.pointerId];
     }
