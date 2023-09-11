@@ -84,7 +84,7 @@ class ContainerView
 
     resize(width, height, x, y)
     {   
-        let upscale = x < this.position.left && width > this.dimension.width;
+        let upscale = x < this.position.left || width > this.dimension.width;
         let in_bounds = x <= this.max.x && width >= this.min.width ;
 
 
@@ -94,7 +94,7 @@ class ContainerView
             this.dimension.width = width;
         }
         
-        upscale = y < this.position.top && height > this.dimension.height;
+        upscale = y < this.position.top || height > this.dimension.height;
         in_bounds = y <= this.max.y && height >= this.min.height ;
 
         if(upscale || in_bounds)
