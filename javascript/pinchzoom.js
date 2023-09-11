@@ -31,7 +31,7 @@ export function pinch(pointers)
     currentDistance.sum = _distance(pointer1, pointer2);
 
     let distanceOffset = 1;
-    initDistance.sum < currentDistance.sum ? distanceOffset = 1- SMOOTHING_FACTOR : distanceOffset = 1 + SMOOTHING_FACTOR;  
+    initDistance.sum < currentDistance.sum ? distanceOffset = 1 - SMOOTHING_FACTOR : distanceOffset = 1 + SMOOTHING_FACTOR;  
     
     initDistance.x *= distanceOffset;
     initDistance.y *= distanceOffset;

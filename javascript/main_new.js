@@ -9,10 +9,12 @@ function init()
     viewport.style.height = "100000px";
     viewport.setAttribute("transform", "matrix(1, 0, 0, 1, -50000, -50000)");
     
-    API.add_element("Hallo", "Hallo", "2", 2, 2);
-    API.add_element("Hallo2", "Hallo","Test2", 3, 2);
+    API.add_element("Hallo", "Ende", "2", 2, 2);
+    API.add_element("Hallo2", "Start","Test2", 3, 2);
     API.add_relation("Test", "Test", "OK", "Hallo", "Hallo2");
     API.add_container("container1", "Das hier ist ein längerer Titel", 1, 1, 8, 4, "");
+    API.add_to_container("Hallo", "container1");
+    API.add_to_container("Hallo2", "container1");
     let events = new CustomEvents();
     draw();
     window.visualViewport.onresize = () => {

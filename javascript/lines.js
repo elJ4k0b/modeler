@@ -1,6 +1,6 @@
 const STANDARD_STYLE = {
     stroke: "8",
-    color: "#295FF4"
+    color: "#332E33",// blue: "#295FF4"
 }
 
 
