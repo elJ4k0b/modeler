@@ -8,7 +8,7 @@ class ColumnView
             top: pY,
         }
         this.title = pTitle;
-        this.type = pType;
+        this.typeId = pType;
         this.selected = false;
     }
 }

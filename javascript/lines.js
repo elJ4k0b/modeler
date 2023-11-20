@@ -1,27 +1,23 @@
-const STANDARD_STYLE = {
-    stroke: "8",
-    color: "#332E33",// blue: "#295FF4"
+import { typeMap } from "./Types.js";
+import * as style from "./styles.js"
+
+let arrow_types = {
+    "line": "line",
+    "line-dashed": "line-dashed",
+    "line-arrowed": "line-arrowed",
+    "line-dashed-arrowed": "line-dashed-arrowed",
 }
 
 
-export function drawline_at(x1, y1, x2, y2, style = STANDARD_STYLE)
+function _create_marker()
 {
-    x1 = parseInt(x1);
-    y1 = parseInt(y1);
-    x2 = parseInt(x2);
-    y2 = parseInt(y2);
-    const svg = document.getElementById("svg");
-    let marker = document.querySelector("#arrowhead");
-
-    if(marker == null)
-    {
-        const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+    const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
         const width = 8;
         const height = 8;
 
         marker.setAttribute("id", "arrowhead");
         marker.setAttribute("viewBox", "-2 -2 20 20");
-        marker.setAttribute("refX", 10);
+        marker.setAttribute("refX", 5);
         marker.setAttribute("refY", 5);
         marker.setAttribute("markerUnits", "strokeWidth");
         marker.setAttribute("markerWidth", width);
@@ -30,43 +26,87 @@ export function drawline_at(x1, y1, x2, y2, style = STANDARD_STYLE)
         const arrowheadPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
         arrowheadPath.setAttribute("stroke-linejoin","round")
         arrowheadPath.setAttribute("stroke-linecap","round")
-        arrowheadPath.setAttribute("stroke", style.color);
+        arrowheadPath.setAttribute("stroke", style.RELATION_COLOR);
         arrowheadPath.setAttribute("fill", "none");
-        arrowheadPath.setAttribute("stroke-width", "3");
-        arrowheadPath.setAttribute("d", "M 0 0 L 10 5 L 0 10");
-        
-        
+        arrowheadPath.setAttribute("stroke-width", style.MARKER_WIDTH);
+        arrowheadPath.setAttribute("d", "M 0 0 L 5 5 L 0 10");
+           
         marker.appendChild(arrowheadPath);
-        svg.appendChild(marker);
-    }
+        return marker;
+}
 
+function _create_path(type)
+{
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("stroke", style.color);
-    path.setAttribute("stroke-dasharray", "4,12");
+    path.setAttribute("stroke", style.RELATION_COLOR);
+    if(type.includes("-dashed"))
+        path.setAttribute("stroke-dasharray", "4,12");
     path.setAttribute("stroke-linejoin", "round");
     path.setAttribute("stroke-linecap", "round");
-    path.setAttribute("stroke-width", style.stroke);
+    path.setAttribute("stroke-width", "5pt");
     path.setAttribute("fill", "none");
-    path.setAttribute("marker-end", "url(#arrowhead)");
+    if(type.includes("-arrowed"))
+        path.setAttribute("marker-end", "url(#arrowhead)");
+    return path;
+}
+
+
+
+function _distance(point1, point2)
+{
+    let distance = {};
+    distance.x = Math.abs(point1.x - point2.x);
+    distance.y = Math.abs(point1.y - point2.y);
+    return Math.sqrt(Math.pow(distance.x, 2) + Math.pow(distance.y, 2));
+}
+
+/**
+ * 
+ * @param {Object} startpoint 
+ * @param {Object} endpoint 
+ * @param {Array} bendpoints 
+ */
+export function drawline_at(line, startpoint, endpoint, bendpoints = [])
+{
+    const svg = document.getElementById("lines");
+    let has_marker = document.querySelector("#arrowhead") != null;
+    if (!has_marker)svg.appendChild(_create_marker());
+    let all_points = [startpoint];
+    bendpoints.sort((a,b) => _distance(startpoint, a) - _distance(startpoint, b));
+    //NUR NOCH FÜR DAS TESTEN!!!!
+    if(startpoint.y != endpoint.y && startpoint.x != endpoint.x) all_points.push({x:startpoint.x, y: endpoint.y});
+    all_points.push(...bendpoints);
+    all_points.push(endpoint);
     
-    const deltaX = Math.abs(x2 - x1);
-    const deltaY = Math.abs(y2 - y1);
-    const directionX = x1 < x2 ? 1 : -1;
-    const directionY = y1 < y2 ? 1 : -1;
-    let pathData;
-    if (deltaX > deltaY) {
-        pathData = `M ${x1} ${y1} L ${x1} ${y2} L ${x2} ${y2}`;
-    }
-    else if(deltaX == 0)
+    //chop ends of
+    let current_start = all_points[0];
+    let direction = {};
+    direction.x = current_start.x - all_points[1].x;
+    direction.y = current_start.y - all_points[1].y;
+
+    let new_start = {};
+    new_start.x = all_points[1].x + direction.x - Math.sign(direction.x) * style.LINE_GAP;
+    new_start.y = all_points[1].y + direction.y - Math.sign(direction.y) * style.LINE_GAP;
+    all_points[0] = new_start;
+    
+    let current_end = all_points[all_points.length-1];
+    direction.x = current_end.x - all_points[all_points.length-2].x;
+    direction.y = current_end.y - all_points[all_points.length-2].y;
+
+    let new_end = {};
+    new_end.x = all_points[all_points.length-2].x + direction.x - Math.sign(direction.x) * style.LINE_GAP;
+    new_end.y = all_points[all_points.length-2].y + direction.y - Math.sign(direction.y) * style.LINE_GAP;
+    all_points[all_points.length-1] = new_end;
+    
+    let pathData = `M ${all_points[0].x} ${all_points[0].y}`;
+
+    for(let i = 1; i < all_points.length; i++)
     {
-        pathData = `M ${x1} ${y1} L ${x2-directionX} ${y2}`;
+        pathData += `L ${all_points[i].x} ${all_points[i].y}`
     }
-    else 
-    {
-        //pathData = `M ${x1} ${y1} L ${x1} ${y2 - directionY * 10} L ${x2} ${y2 - directionY * 10}`;
-        pathData = `M ${x1} ${y1} L ${x1} ${y2} L ${x2} ${y2}`;
-    }
-    //pathData = `M ${x1} ${y1} L ${x1} ${y2} L ${x2} ${y2}`;
+    let lineType = typeMap.get(line.typeId) || "";
+    let type = arrow_types[lineType.lineStyle] || "";
+    let path = _create_path(type);
     path.setAttribute("d", pathData);
     svg.appendChild(path);
     svg.innerHTML +="";

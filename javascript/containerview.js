@@ -24,7 +24,7 @@ class ContainerView
         }
         this.children = new Map();
         this.title = pTitle;
-        this.type = pType;
+        this.typeId = pType;
         this.selected = false;
         this.dragged = false;
     }
@@ -71,27 +71,28 @@ class ContainerView
         children.sort((a,b) => {return a.position.left - b.position.left});
         let most_left = children[0];
         let most_right = children[children.length-1];
-        this.max.x = most_left.position.left - grid_size(0.5);
-        this.min.width = most_right.position.left + most_right.dimension.width - this.position.left + grid_size(0.5);
+        this.max.x = most_left.position.left - grid_size(1);
+        this.min.width = most_right.position.left + most_right.dimension.width - this.max.x + grid_size(1);
         
         children.sort((a,b) => {return a.position.top - b.position.top});
         let most_top = children[0];
         let most_bottom = children[children.length - 1];
         this.max.y = most_top.position.top - grid_size(1);
-        this.min.height = most_bottom.position.top + most_bottom.dimension.height - this.position.top + grid_size(1);     
+        this.min.height = most_bottom.position.top + most_bottom.dimension.height - this.max.y + grid_size(1);    
     
     }
 
     resize(width, height, x, y)
     {   
+        let success = {x: false, y: false};
+
         let upscale = x < this.position.left || width > this.dimension.width;
         let in_bounds = x <= this.max.x && width >= this.min.width ;
-
-
         if(upscale || in_bounds)
         {
             this.position.left = x;
             this.dimension.width = width;
+            success.x = true;
         }
         
         upscale = y < this.position.top || height > this.dimension.height;
@@ -101,11 +102,13 @@ class ContainerView
         {
             this.position.top = y;
             this.dimension.height = height;
+            success.y = true;
         } 
         else {
             //this.position.top = this.max.y;
         }
         this.update_bounds();
+        return success;
     }
 }
 

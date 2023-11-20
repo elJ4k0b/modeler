@@ -1,6 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
 :root{
     --card-color: white;
-    --text-color: #C71E1E;
+    --text-color: #343A40;
+    --title-size: 1.75rem;
+    --subtitle-size: 1.5rem;
+}
+
+html, body {
+    overflow: hidden;
 }
 
 svg:not(:root) {
@@ -22,31 +29,13 @@ svg:not(:root) {
    margin: 0;
 }
 
-diagram-element {
-
-    min-height: 200px;
-    min-width: 200px;
-    position: absolute;
-    display:flex;
-    flex-direction: column;
-    top: 50%;
-    left: 50%;
-    
-    padding: 1.5rem;
-    border-radius: 1rem;
-    background-color: var(--card-color);
-    outline: none;
-    box-shadow: 0 0 0.6rem rgba(0, 0, 0, 0.2);
-
-}
-
-
 .transition-move {
-    transition: left 0.5s ease, top 0.5s ease-in;
+    transition: all 0.5s ease;
 }
 
 .card {   
     touch-action: pinch-zoom;
+    border: solid 3pt #332E33;
     min-height: 100px;
     min-width: 100px;
     position: absolute;
@@ -60,15 +49,47 @@ diagram-element {
     outline: none;
 }
 
-.card > .card-title {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: var(--text-color);
-    margin-top: 0%;
-    margin-bottom: 1rem;
-    height: fit-content;
-    display:inline-block;
-    width: 100%;
+.card > .card-type {
+    position: absolute;
     text-align: center;
+    bottom: 100%;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    height: fit-content;
+
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: var(--title-size);
+    pointer-events: none;
+    color: var(--text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card > .card-title {
+    position: absolute;
+    text-align: center;
+    top: 100%;
+    left: 50%;
+    transform: translate(-50%, 20%);
+    height: fit-content;
+
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: var(--subtitle-size);
+    pointer-events: none;
+    color: var(--text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card > .icon-container {
+    width: 80%;
+    height: 80%;
+    position: absolute;
+    top:50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    background-repeat: no-repeat;
 }
 
 .card-start {
@@ -79,86 +100,38 @@ diagram-element {
     position: absolute;
     width: 10%;
     height: 10%;
-    top: 5%;
-    right: 10%;
+    top: 10%;
+    right: 30%;
+    z-index: 5;
     content: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="%231f6aff" class="bi bi-geo-alt-fill" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>');
-}
-
-.popover {
-    transform-origin: top left;
-    padding-block: 0.05rem;
-    height: fit-content;
-    min-height: 2rem;
-    min-width:auto;
-    position: absolute;
-    left: 50%;
-    top: -10%;
-    transform:  scale(1) translate(-50%, -100%);
-    visibility: hidden;
-    opacity: 0;
-    transition: opacity 0.2s ease-in, max-width 1s linear;
-    border-radius: 5rem;
-    background-color: white;
-    
-    justify-content: space-around;
-    display:flex;
-    flex-direction: row;
-    
-}
-.popover-shrunken {
-    max-width: 0px!important;
 }
 
 .container {
     position: relative;
     display: block;
-
 }
 
 .container-title {
+
+    font-family: 'Bebas Neue', sans-serif !important;
+    font-size: var(--title-size);
     text-overflow: ellipsis;
+    pointer-events: none;
+    color: #332E33;
     position: absolute;
     transform-origin: bottom right;
     transform: translate(-100%,-100%) rotate(270deg) translateY(100%);
-    font-family: sans-serif;
     border-block-end: solid 2px lightgray;
 }
 
-/*icon classes*/
-.icon {
-    margin-inline: 0.2rem;;
-    padding: 0.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height:auto;
-    border-radius: 5rem;
-    box-sizing: border-box;
+.debug-info {
+    position: absolute;
+    max-width:  100%;
+    top: 0%;
+    right: 0%;
+    transform: translate(100%, 0%);
+    background-color: rgba(0, 255, 0, 0.5);
 }
-
-@media (hover: none) {
-    .icon:hover {
-        background-color: inherit;
-    }
-}
-
-.icon:hover {
-    background-color: rgba(0, 0, 0, 0.1);
-}
-.icon:first-child {
-    margin-left: 0.05rem;
-}
-
-.icon:last-child {
-    margin-right: 0.05rem;
-}
-
-
-.icon-locked {
-    color: white;
-    background-color: #1f6aff;
-}
-
 
 /* Selection of shadow options*/
 
@@ -167,13 +140,9 @@ diagram-element {
 }
 
 .shadow-medium {
-    box-shadow: 0 0 0.6rem rgba(0, 0, 0, 0.2);
+    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.28);
 }
 
 .shadow-small {
     box-shadow: 0 0 0.3rem rgba(0, 0, 0, 0.1);
-}
-
-#container {
-    overflow: visible !important;
 }

@@ -58,6 +58,9 @@ export function scale(event)
         let newX = 0;
         let newY = 0;
         element.dragged = true;
+        console.log("deltaSize");
+        console.log(deltaSizeX);
+        console.log(deltaSizeY);
         //Scailing the element around its center;
         switch(scalePoint)
         {
@@ -96,9 +99,9 @@ export function scale(event)
         console.log(newX + ", " + newY);
         console.log("dim");
         console.log(newWidth + ", " +  newHeight);
-        element.resize(newWidth, newHeight, newX, newY);
-        scaleStartY = mousepos.y;
-        scaleStartX = mousepos.x;
+        let success = element.resize(newWidth, newHeight, newX, newY);
+        if(success.x) scaleStartX = mousepos.x;
+        if(success.y) scaleStartY = mousepos.y;
         draw();
     }
 }

@@ -13,6 +13,10 @@ class ZoomHandler
         this.viewport.addEventListener("wheel", (event) => this.handleWheel(event));
         this.scrollSpeed = SCROLL_SPEED;
 
+        this.top_percentage = 0;
+        this.left_percentage = 0;
+        this.bottom_percentage = 0;
+        this.right_percentage = 0;
         //Used for calculating transform center
         this.viewportCenter = {x: 0, y: 0};
     }
@@ -89,8 +93,8 @@ class ZoomHandler
         this.viewportCenter.x = center.x;
         this.viewportCenter.y = center.y;
 
-        matrix.e = center.x -50000;
-        matrix.f = center.y -50000;
+        matrix.e = center.x + DEFAULT_VIEWPORT_OFFSET;
+        matrix.f = center.y + DEFAULT_VIEWPORT_OFFSET;
 
         this.zoomFactor = newZoom;
         return matrix;
@@ -173,12 +177,14 @@ class ZoomHandler
     scrollTo(target, smooth = true)
     {
         let targetCenter = {};
-        targetCenter.x = this.viewportCenter.x;
+        targetCenter.x = this.viewportCenter.x; 
         targetCenter.y = this.viewportCenter.y;
 
+        let margin = this.getMargin(); 
+
         let windowCenter = {};
-        windowCenter.x = window.innerWidth / 2;
-        windowCenter.y = window.innerHeight / 2;
+        windowCenter.x = (window.innerWidth + margin.left - margin.right) / 2;
+        windowCenter.y = (window.innerHeight + margin.top - margin.bottom) / 2;
 
         targetCenter.x = windowCenter.x - target.x * this.zoomFactor;
         targetCenter.y = windowCenter.y - target.y * this.zoomFactor;
@@ -233,7 +239,6 @@ class ZoomHandler
 
     pan(event)
     {
-        console.log("pan");
         let delta = {};
         let matrix = this._getMatrix(this.viewport);
         delta.x = event.clientX - this.panstart.x;
@@ -245,6 +250,33 @@ class ZoomHandler
         matrix = this._horizontalScroll(matrix, -delta.x);
         matrix = this._verticalScroll(matrix, -delta.y);
         this._applyMatrix(this.viewport, matrix);
+    }
+
+    set_viewport_margin(top, bottom, left, right)
+    {
+        this.top_percentage = top;
+        this.bottom_percentage = bottom;
+        this.left_percentage = left;
+        this.right_percentage = right;
+    }
+
+    getMargin()
+    {
+        let margin = {};
+        margin.top = window.innerHeight * this.top_percentage;
+        margin.bottom = window.innerHeight * this.bottom_percentage;
+        margin.left = window.innerWidth * this.left_percentage;
+        margin.right = window.innerWidth *this.right_percentage;
+        return margin;
+    }
+
+    getWindowDimension()
+    {
+        let margin = this.getMargin();
+        let innerWidth = window.innerWidth - margin.left - margin.right;
+        let innerHeight = window.innerHeight -  margin.top - margin.bottom;
+
+        return {width: innerWidth, height: innerHeight};
     }
 }
 

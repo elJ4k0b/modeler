@@ -1,12 +1,13 @@
 class LineView
 {
-    constructor(pId, pStartId, pEndId, pType, pTitle)
+    constructor(pId, pStartId, pEndId, pType, pTitle, pBendPoints)
     {
         this.id = pId;
         this.title = pTitle;
         this.startId = pStartId; 
         this.endId = pEndId;
-        this.type = pType;
+        this.typeId = pType;
+        this.bendpoints = pBendPoints;
         this.selected = false;
     }
 }

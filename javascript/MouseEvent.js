@@ -69,12 +69,11 @@ class MouseEvent
 
         
         if(pointer.drag){
-            console.log("dragend");
             document.body.style.cursor = "Default";
             this.handleDragEnd(event);
         } 
         
-        if(!pointer.longpress)
+        if(!pointer.longpress && !pointer.drag)
         {
             clearTimeout(pointer.longclickTimeout);  
             this.handleClick(event); 
@@ -106,7 +105,7 @@ class MouseEvent
         event.preventDefault();
         let pointer = {};
         this._pointers[event.pointerId] = pointer;
-        console.log(event.pointerId);
+        
 
         pointer.target = event.target.closest('[id*="diagram"]') || event.target;
 

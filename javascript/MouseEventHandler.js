@@ -4,9 +4,10 @@ import { startdrag, drag, enddrag } from "./drag.js";
 import { startscale, scale, endscale } from "./scale.js";
 import { select } from "./select.js";
 import { startpinch,pinch, endpinch } from "./pinchzoom.js";
+import draw from "./draw.js";
+import { diagview } from "./diagramview.js";
 
 
-let selected_tool;
 
 const TOOLS = {
     select: "select",
@@ -15,6 +16,8 @@ const TOOLS = {
     scroll: "scroll",
     zoom: "zoom"
 }
+
+let selected_tool = TOOLS.drag;
 
 function switch_tool(tool)
 {
@@ -36,8 +39,8 @@ function switch_tool(tool)
             selected_tool = TOOLS.scroll;
             break;
     }
-    console.log(selected_tool);
 }
+
 class CustomEvents extends MouseEvent
 {
     constructor()
@@ -48,16 +51,20 @@ class CustomEvents extends MouseEvent
 
     handleClick(event)
     {
-        if(selected_tool == TOOLS.scale) return;
-        select(event);
+        if(selected_tool == TOOLS.drag)  select(event);
     }
     handleLongPress(pointer, event)
     {
         super.handleLongPress(pointer, event);
+        let element = diagview.get_element(event.target.id);
+        if(!element) return;
+        diagview.set_start(element.id);
+        draw();
     }
 
     handlePointerDown(event)
     {
+        draw();
         if(selected_tool == TOOLS.scroll && Object.keys(this._pointers).length == 2)
         {
             switch_tool(TOOLS.zoom);
@@ -81,10 +88,14 @@ class CustomEvents extends MouseEvent
             switch_tool(TOOLS.scroll);
             zoomHandler.start_pan(event);
             return;
+        }else if(target.classList.contains("container") && !diagview.is_selected(target.id))
+        {
+            switch_tool(TOOLS.scroll);
+            zoomHandler.start_pan(event);
+            return;
         }
         target.classList.remove("transition-move");
         switch_tool(TOOLS.drag);
-        console.log(target.classList.contains("toucharea"));
         if(target.classList.contains("visual") || target.classList.contains("toucharea")) switch_tool(TOOLS.scale);
         selected_tool == TOOLS.scale ? startscale(event):startdrag(event);
     }
@@ -93,29 +104,25 @@ class CustomEvents extends MouseEvent
         switch(selected_tool)
         {
             case TOOLS.drag:
-                console.log("dragging");
                 drag(event);
                 break;
             case TOOLS.scale:
-                console.log("scaling");
                 scale(event);
                 break;
             case TOOLS.scroll:
-                console.log("panning");
                 zoomHandler.pan(event);
                 break;
             case TOOLS.zoom:
-                console.log("zooming");
                 if(Object.keys(this._pointers).length < 2)
                 {
-                    console.log("weniger als zwei Pointer");
-                     switch_tool(TOOLS.drag);
+                     switch_tool(TOOLS.scroll);
+                     zoomHandler.start_pan(event);
                      return;
                 }
+                draw();
                 pinch(this._pointers);
                 break;
             default:
-                console.log("default");
                 drag(event);    
                 break;
         }
@@ -131,15 +138,18 @@ class CustomEvents extends MouseEvent
                 break;
             case TOOLS.scale:
                 endscale(event);
+                switch_tool(TOOLS.drag);
                 break;
             case TOOLS.zoom:
-                switch_tool(TOOLS.drag);
+                if(Object.keys(this._pointers).length < 2)
+                {
+                     switch_tool(TOOLS.drag);
+                }
                 break;
             case TOOLS.scroll:
                 switch_tool(TOOLS.drag);
                 break;
         }
-        requestAnimationFrame(() => {event.target.classList.add("transition-move");});
     }
 
     scroll()

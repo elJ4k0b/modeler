@@ -1,7 +1,11 @@
 import { diagview } from "./diagramview.js";
 import { drawline_at } from "./lines.js";
-import { grid_size } from "./grid.js";
+import { grid_size, size } from "./grid.js";
 import zoomHandler from "./Zoom.js";
+import * as style from "./styles.js"
+import { typeMap } from "./Types.js";
+
+let debug = true;
 
 const CANVAS_WIDTH = 100000;
 
@@ -11,20 +15,24 @@ const CANVAS_WIDTH = 100000;
  * @param {HTMLElement} div 
  * @returns 
  */
+export function toggel_debuginfo()
+{
+    debug = !debug;
+}
+
 function draw_container(container, div = document.createElement("div"))
 {
     div.classList.add("draggable");
     div.classList.add("card");
     div.classList.add("container");
     div.classList.add("shadow-medium");
+    div.classList.add("transition-move");
     
 
     div.id = container.id;
     div.style.position = "absolute";
     let matrix  = `matrix(${1}, ${0}, ${0}, ${1}, ${container.position.left}, ${container.position.top})`;
     div.style.transform = matrix;
-    // div.style.top = `${container.position.top}px`;
-    // div.style.left = `${container.position.left}px`;
     div.style.width = `${container.dimension.width}px`;     
     div.style.height = `${container.dimension.height}px`;
     div.style.padding = "0px";
@@ -39,14 +47,14 @@ function draw_container(container, div = document.createElement("div"))
     if(titleContainer)
     {
         titleContainer.style.width = `${container.dimension.height}px`;
-        titleContainer.querySelector("h2").innerHTML = container.title;
+        titleContainer.querySelector("p").innerHTML = container.title;
     }
     else
     {
         titleContainer = document.createElement("div");    
         titleContainer.classList.add("container-title");
         titleContainer.style.width = `${container.dimension.height}px`;
-        let title = document.createElement("h2");
+        let title = document.createElement("p");
         title.style.textOverflow = "ellipsis"
         title.style.textAlign = "center";
         title.innerHTML = container.title;
@@ -54,6 +62,17 @@ function draw_container(container, div = document.createElement("div"))
         div.appendChild(titleContainer);
     }
     
+    let debugInfo = div.querySelector(".debug-info");
+    if(!debugInfo)
+    {
+        debugInfo = document.createElement("div");
+        div.appendChild(debugInfo);
+    }
+    debugInfo.innerHTML = `Width: ${container.dimension.width/size} <br> Height: ${container.dimension.height/size}
+    <br> x: ${container.position.left/size} <br> y: ${container.position.top/size}`;
+    debugInfo.classList.add("debug-info");
+    if(!debug) div.removeChild(debugInfo);
+
     return div;
 }
 
@@ -62,13 +81,12 @@ function draw_element(tableview, div = document.createElement("div"))
     div.classList.add("draggable");
     div.classList.add("card");
     div.classList.add("shadow-medium");
+    div.classList.add("transition-move");
+
     div.id = tableview.id;
     div.style.position = "absolute";
     let matrix  = `matrix(${1}, ${0}, ${0}, ${1}, ${tableview.position.left}, ${tableview.position.top})`;
     div.style.transform = matrix;
-
-    // div.style.top = `${tableview.position.top}px`;
-    // div.style.left = `${tableview.position.left}px`;
     div.style.width = `${tableview.dimension.width}px`;//`${grid_size(1)}px`;     
     div.style.height = `${tableview.dimension.height}px`;//`${grid_size(1)}px`;
     div.style.padding = "5px";
@@ -88,6 +106,72 @@ function draw_element(tableview, div = document.createElement("div"))
     {
         div.classList.remove("card-start");
     }
+
+    let typeContainer = div.querySelector(".card-type")
+    if(typeContainer)
+    {
+        let type = typeMap.get(tableview.typeId) || "none";
+        typeContainer.querySelector("span").innerHTML = type.label;
+    }
+    else
+    {
+        typeContainer = document.createElement("div");
+        typeContainer.classList.add("card-type");
+        typeContainer.style.width = `${tableview.dimension.width * 2}px`;
+
+        let title = document.createElement("span");
+        title.style.margin = "0";
+        title.style.textOverflow = "ellipsis";
+        let type = typeMap.get(tableview.typeId) || "none";
+        title.innerHTML = type.label;
+
+        typeContainer.appendChild(title);
+        div.appendChild(typeContainer);
+    }
+
+
+    let iconContainer = div.querySelector(".icon-container")
+    if(!iconContainer)
+    {
+        iconContainer = document.createElement("div");
+        div.appendChild(iconContainer);
+    }
+    iconContainer.setAttribute("class", "");
+    iconContainer.classList.add("icon-container");
+    iconContainer.classList.add(tableview.typeId);
+
+
+    let titleContainer = div.querySelector(".card-title")
+    if(titleContainer)
+    {
+        titleContainer.querySelector("span").innerHTML = tableview.title;
+    }
+    else
+    {
+        titleContainer = document.createElement("div");
+        titleContainer.classList.add("card-title");
+        titleContainer.style.width = `${tableview.dimension.width * 2}px`;
+
+        let title = document.createElement("span");
+        title.style.textOverflow = "ellipsis"
+        title.style.margin = "0";
+        title.innerHTML = tableview.title;
+
+        titleContainer.appendChild(title);
+        div.appendChild(titleContainer);
+    }
+
+    let debugInfo = div.querySelector(".debug-info");
+    if(!debugInfo)
+    {
+        debugInfo = document.createElement("div");
+        div.appendChild(debugInfo);
+    }
+    debugInfo.innerHTML = `Width: ${tableview.dimension.width/size} Height: ${tableview.dimension.height/size}
+    <br> x: ${tableview.position.left/size} <br> y: ${tableview.position.top/size}`;
+    debugInfo.classList.add("debug-info");
+    if(!debug) div.removeChild(debugInfo);
+
     return div;
 }
 
@@ -163,6 +247,8 @@ function draw_overlay() {
     let maxWidth = 0;
     let maxHeight = 0;
     let overlayContainerSvg = document.querySelector("#overlay");
+    overlayContainerSvg.setAttribute("width","100%");
+    overlayContainerSvg.setAttribute("height","100%");
     overlayContainerSvg.setAttribute("transform","matrix(1, 0, 0, 1, 50000, 50000)");
 
     for(let view of diagview.elements.values())
@@ -179,20 +265,28 @@ function draw_overlay() {
     
                 let overlay = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
                 overlay.setAttribute("fill", "none")
-                overlay.setAttribute("stroke", "#26A4FF"); //#295FF4
+                overlay.setAttribute("stroke", style.OVERLAY_COLOR);
+                overlay.setAttribute("stroke-linejoin", "round");
                 group.appendChild(overlay);
     
                 for(let i = 0; i < 4; i++)
                 {
-                    let circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                    circle.setAttribute("fill", "#76C2F1");
+                    let circle = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                    //hide if element is not container
+                    let is_container = diagview.get_container(view.id);
+                    let color = is_container ? "white" : "transparent"
+                    circle.setAttribute("fill", color);//#76C2F1
                     circle.classList.add("visual");
                     circle.setAttribute("scaling-index", i);
+                    color = is_container? style.OVERLAY_COLOR: "transparent";
+                    circle.setAttribute("stroke", color);
+                    circle.setAttribute("stroke-width",Math.max(6, 3 /zoomHandler.zoomFactor));
+                    circle.setAttribute("rx", "5");
 
                     let toucharea = document.createElementNS("http://www.w3.org/2000/svg", "circle");
                     toucharea.classList.add("toucharea");
                     toucharea.setAttribute("fill", "transparent");
-                    toucharea.style.pointerEvents = "all";
+                    toucharea.style.pointerEvents = is_container? "all": "none";
                     toucharea.style.touchAction = "none";
                     toucharea.setAttribute("scaling-index", i);
 
@@ -209,7 +303,8 @@ function draw_overlay() {
             let bottomRight = `${view.position.left + view.dimension.width},${view.position.top + view.dimension.height}`;
             let overlay = group.querySelector("polygon");
             overlay.setAttribute("points", `${topLeft} ${topRight} ${bottomRight} ${bottomLeft}`);
-            overlay.setAttribute("stroke-width", "6")//` ${1 * (1/window.visualViewport.scale)}px`);
+            overlay.setAttribute("stroke-width",Math.max(6, 3 /zoomHandler.zoomFactor));
+            //overlay.setAttribute("stroke-width", "6")//` ${1 * (1/window.visualViewport.scale)}px`);
             let points = overlay.getAttribute("points").split(" ");
 
             for(let [index, circlegroup] of group.querySelectorAll("g").entries())
@@ -225,9 +320,14 @@ function draw_overlay() {
                 let max = view.dimension.width/5;
                 area.setAttribute("r", Math.max(min, 30 /zoomHandler.zoomFactor));
                 area.setAttribute("r", Math.min(max, 30 /zoomHandler.zoomFactor));
-                circle.setAttribute("cx", coords[0]);
-                circle.setAttribute("cy", coords[1]);
-                circle.setAttribute("r", Math.max(10, 5 /zoomHandler.zoomFactor));
+                //circle.setAttribute("cx", coords[0]);
+                //circle.setAttribute("cy", coords[1]);
+                let circleWidth = Math.max(20, 10 /zoomHandler.zoomFactor);
+                circle.setAttribute("x", coords[0] - circleWidth/2);
+                circle.setAttribute("y", coords[1] - circleWidth/2);
+                //circle.setAttribute("r", Math.max(10, 5 /zoomHandler.zoomFactor));
+                circle.setAttribute("width", circleWidth);
+                circle.setAttribute("height", circleWidth);
             }
             maxHeight = Math.max(view.dimension.height + view.position.top, maxHeight);
             maxWidth = Math.max(view.dimension.width + view.position.left, maxWidth);
@@ -245,17 +345,12 @@ function draw_overlay() {
             group.remove();
         }
     }
-    
-    //Force svg to svg to update
-    document.querySelector("#overlay").style.width = `${maxWidth+20}px`;
-    document.querySelector("#overlay").style.height = `${maxHeight+20}px`;
 }
 
 function draw_lines()
 {
-    let svg = document.getElementById("svg");
+    let svg = document.getElementById("lines");
     svg.setAttribute("transform","matrix(1, 0, 0, 1, 50000, 50000)");
-    let canvas = document.getElementById("canvas");
     svg.setAttribute("width","100%");
     svg.setAttribute("height","100%");
     svg.innerHTML = "";
@@ -291,7 +386,7 @@ function draw_lines()
             startPosY = start.position.top + start.dimension.height/2;
             if(deltaX < 0 )
             {
-                startPosX = start.position.left + start.dimension.height;
+                startPosX = start.position.left + start.dimension.width;
             }   
             else
             {
@@ -329,7 +424,7 @@ function draw_lines()
             endPosX = end.position.left  + end.dimension.width;
             endPosY = end.position.top + end.dimension.height/2;    
         }
-        drawline_at(startPosX, startPosY, endPosX, endPosY);
+        drawline_at(line, {x:startPosX, y:startPosY}, {x:endPosX, y:endPosY}, line.bendpoints);
     }
     svg.innerHTML += "";
 }

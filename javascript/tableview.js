@@ -5,7 +5,7 @@ class Tableview
         this.title = pTitle;
         this.container = pContainer;
         this.id = pId;
-        this.type = pType;
+        this.typeId = pType;
         this.selected = false;
         this.position  = {
             top: pTop,
@@ -16,9 +16,9 @@ class Tableview
             height: pHeight
         };
         this.columnViews = new Map();
-        this.dirty  = true;
         this.selected = false;
         this.locked = false;
+        this.dragged = false;
     }
 
     get_col(id)

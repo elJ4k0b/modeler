@@ -2,12 +2,14 @@ import { diagview } from "./diagramview.js";
 import draw from "./draw.js";
 import zoomHandler from "./Zoom.js";
 
-function scroll_to_selection()
+export function scroll_to_selection()
 {
-    let selectionXmin = 0;
-    let selectionXmax = 0;
-    let selectionYmin = 0;
-    let selectionYmax = 0;
+    
+    //Hier wichtig: Math.max ist die kleinste mögliche Zahl und Math.min die größte
+    let selectionXmin = Math.min();
+    let selectionXmax = Math.max();
+    let selectionYmin = Math.min();
+    let selectionYmax = Math.max();
     for(let tblviewId of diagview.elements.keys())
     {
         if(diagview.is_selected(tblviewId))
@@ -28,18 +30,21 @@ function scroll_to_selection()
             }
         }
     }
+
     let selectionHeight = selectionYmax - selectionYmin;
     let selectionWidth = selectionXmax - selectionXmin;
     let midX = selectionWidth/2 + selectionXmin
     let midY = selectionHeight/2 + selectionYmin;
+    let windowDimension = zoomHandler.getWindowDimension();
 
-    
-    let toWide = selectionWidth * zoomHandler.zoomFactor > window.innerWidth;
-    let toHigh = selectionHeight * zoomHandler.zoomFactor > window.innerHeight;
+    let toWide = selectionWidth * zoomHandler.zoomFactor > windowDimension.width;
+    let toHigh = selectionHeight * zoomHandler.zoomFactor > windowDimension.height;
+
     if(toWide || toHigh)
     {
-        let xScale = window.innerWidth/(selectionWidth*1.2);
-        let yScale = window.innerHeight/(selectionHeight*1.2);
+        console.log("to ");
+        let xScale = (windowDimension.width)/(selectionWidth*1.2);
+        let yScale = (windowDimension.height)/(selectionHeight*1.2);
         let desiredScale = Math.min(xScale, yScale); 
         zoomHandler.setScale(zoomHandler.zoomFactor / desiredScale, {x: midX, y: midY});
     }
@@ -53,9 +58,6 @@ function scroll_to_selection()
 export function select(event)
 {
     let element = diagview.get_element(event.target.id);
-    console.log(event.target.id);
-    console.log(element);
-    
     if(!event.ctrlKey)
     {
         for(let elemId of diagview.elements.keys())
