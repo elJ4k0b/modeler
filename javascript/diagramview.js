@@ -1,6 +1,8 @@
 import Tableview from "./tableview.js";
 import ContainerView from "./containerview.js";
 import LineView from "./lineview.js";
+import { notify } from "./API.js";
+import { log } from "./Log.js";
 
 
 class Diagramview {
@@ -15,12 +17,26 @@ class Diagramview {
         this.prevStartElement = null;
         this.startElement  = null;
     }
+    reset()
+    {
+        this.tableviews = new Map();
+        this.lineviews = new Map();
+        this.containers = new Map();
+        this.elements = new Map();
+        this.changelog = new Array();
+        this.selected_elements = new Map();
+        this.prevStartElement = null;
+        this.startElement  = null;
+    }
 
     set_start(id)
     {
         let element = this.tableviews.get(id);
+        if(!element) console.warn("id " + id + " does not belong to a diagram element");
         this.prevStartElement = this.startElement;
         this.startElement = element;
+
+        notify("start", {id});
     }
 
     get_tableview(id)
@@ -82,18 +98,18 @@ class Diagramview {
         
     }
 
-    move(id, left, top)
+    move(id, x, y)
     {    
-        let element = this.elements.get(id);
-        element.position.left = left;
-        element.position.top = top;   
+        let element = this.get_tableview(id) || this.get_container(id);
+        if(!element) return;
+        element.move(x, y);
     }
 
     remove_element(id)
     {      
         let element = this.elements.get(id);
         this.elements.delete(id);
-        if (element == null){console.log("element not found");}
+        if (element == null){log("element not found");}
         switch(element.constructor)
         {
             case ContainerView:
@@ -145,6 +161,29 @@ class Diagramview {
         if(!element){return}
         element.selected = bool;
         bool? this.selected_elements.set(id, element): this.selected_elements.delete(id);
+        if(bool) notify("select", {id});
+    }
+
+    removeFromCurrentContainer(elementId)
+    {
+        let element = this.get_element(elementId);
+        let currentContainer = element.container;
+        if(!currentContainer) return;
+        element.container = null;
+        currentContainer.remove(element);
+
+        notify("container-remove", {elementId: elementId, containerId: currentContainer.id})
+    }
+
+    addToContainer(elementId, containerId)
+    {
+        let container = this.get_container(containerId)
+        let element = this.get_element(elementId);
+        if(!container || !element) return;
+        container.add(element);
+        element.container = container;
+
+        notify("container-add", {elementId, containerId})
     }
 
     get_selected_elements()
