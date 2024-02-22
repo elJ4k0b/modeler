@@ -6,6 +6,7 @@ import { select } from "./select.js";
 import { startpinch,pinch, endpinch } from "./pinchzoom.js";
 import draw from "./draw.js";
 import { diagview } from "./diagramview.js";
+import { notify } from "./API.js";
 
 
 
@@ -135,6 +136,8 @@ class CustomEvents extends MouseEvent
         {
             case TOOLS.drag:
                 enddrag(event);
+                this.checkDropTargets(event);
+                notify("move", {id: event.target.id, x: event.clientX, y: event.clientY});
                 break;
             case TOOLS.scale:
                 endscale(event);
@@ -150,11 +153,29 @@ class CustomEvents extends MouseEvent
                 switch_tool(TOOLS.drag);
                 break;
         }
+
+        
     }
 
-    scroll()
+    checkDropTargets(event)
     {
+        let dropTargets = document.elementsFromPoint(event.clientX, event.clientY);
+        let draggedElement = event.target;
 
+        let draggedElementIsContainer = diagview.get_container(draggedElement.id) != null;
+        if(draggedElementIsContainer) return;
+
+        for(let target of dropTargets)
+        {
+            let container = diagview.get_container(target.id);
+            if(!container || draggedElement == target) continue;
+
+            let element = diagview.get_element(draggedElement.id);
+            diagview.removeFromCurrentContainer(element.id);
+            diagview.addToContainer(element.id, container.id);
+            return;
+        }
+        diagview.removeFromCurrentContainer(draggedElement.id);
     }
 }
 
