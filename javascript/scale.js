@@ -14,9 +14,6 @@ let offset = {};
 export function startscale(event)
 {
     let index = event.target.getAttribute("scaling-index");
-    console.log(event.target);
-    console.log(event.target.getAttribute("scaling-index"));
-
 
     if(event.type == "touchstart")
     {
@@ -58,9 +55,6 @@ export function scale(event)
         let newX = 0;
         let newY = 0;
         element.dragged = true;
-        console.log("deltaSize");
-        console.log(deltaSizeX);
-        console.log(deltaSizeY);
         //Scailing the element around its center;
         switch(scalePoint)
         {
@@ -95,10 +89,6 @@ export function scale(event)
             default:
                 return;
         }
-        console.log("pos");
-        console.log(newX + ", " + newY);
-        console.log("dim");
-        console.log(newWidth + ", " +  newHeight);
         let success = element.resize(newWidth, newHeight, newX, newY);
         if(success.x) scaleStartX = mousepos.x;
         if(success.y) scaleStartY = mousepos.y;

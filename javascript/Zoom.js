@@ -1,3 +1,5 @@
+import { log } from "./Log.js";
+
 const SCALING_CONSTANT = 0.0005;
 const DEFAULT_VIEWPORT_OFFSET = -50000;
 const MAX_ZOOM = 4;
@@ -106,8 +108,8 @@ class ZoomHandler
             element.style.transform = matrix.toString();
         }catch (error)
         {
-            console.log(error);
-            console.log(matrix);
+            log(error);
+            log(matrix);
         }
         
     }
@@ -142,7 +144,6 @@ class ZoomHandler
         stepsize.y = Math.abs(stepsize.y) * Math.sign(dist.y);
 
         let currentDistance = {x: matrix.e - target.x, y: matrix.f - target.y};
-        
 
         if(Math.abs(currentDistance.x) > Math.abs(stepsize.x) )
         { 
@@ -223,7 +224,7 @@ class ZoomHandler
 
     start_pan(event)
     {
-        console.log("startpan");
+        log("startpan");
         let start = {};
         start.x = event.clientX;
         start.y = event.clientY;
@@ -258,6 +259,22 @@ class ZoomHandler
         this.bottom_percentage = bottom;
         this.left_percentage = left;
         this.right_percentage = right;
+
+        // //for debuging
+        // let rect = document.createElement("div");
+        // let dim = this.getWindowDimension();
+
+        // rect.style.widht = `${dim.width}px`;
+        // log(this.getMargin());
+        // rect.style.height = `${dim.height}px`;
+        // rect.style.top = `${top}%`;
+        // rect.style.left = `${left}%`;
+        // rect.style.right = `${right}%`;
+        // rect.style.bottom = `${bottom}%`;
+        // rect.style.backgroundColor = "rgba(255, 0, 0, 0.5)";
+        // rect.style.position = "absolute";
+        // rect.style.pointerEvents = "none";
+        // document.body.appendChild(rect);
     }
 
     getMargin()

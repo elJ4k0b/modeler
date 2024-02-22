@@ -10,27 +10,30 @@ export function scroll_to_selection()
     let selectionXmax = Math.max();
     let selectionYmin = Math.min();
     let selectionYmax = Math.max();
-    for(let tblviewId of diagview.elements.keys())
+    let somethingIsSelected = false;
+    for(let elementId of diagview.elements.keys())
     {
-        if(diagview.is_selected(tblviewId))
+        if(diagview.is_selected(elementId))
         {
-            let tblview = diagview.get_element(tblviewId);
-            selectionXmax = Math.max(tblview.position.left+tblview.dimension.width, selectionXmax)
-            selectionYmax = Math.max(tblview.position.top+tblview.dimension.height, selectionYmax)
+            somethingIsSelected = true;
+            let element = diagview.get_element(elementId);
+            selectionXmax = Math.max(element.position.left+element.dimension.width, selectionXmax)
+            selectionYmax = Math.max(element.position.top+element.dimension.height, selectionYmax)
 
             if(selectionYmin != 0 && selectionXmin != 0)
             {
-                selectionXmin = Math.min(tblview.position.left, selectionXmin);
-                selectionYmin = Math.min(tblview.position.top, selectionYmin);
+                selectionXmin = Math.min(element.position.left, selectionXmin);
+                selectionYmin = Math.min(element.position.top, selectionYmin);
             }
             else
             {
-                selectionXmin = tblview.position.left;
-                selectionYmin = tblview.position.top;
+                selectionXmin = element.position.left;
+                selectionYmin = element.position.top;
             }
         }
     }
 
+    if(somethingIsSelected == false) return;
     let selectionHeight = selectionYmax - selectionYmin;
     let selectionWidth = selectionXmax - selectionXmin;
     let midX = selectionWidth/2 + selectionXmin
@@ -42,7 +45,6 @@ export function scroll_to_selection()
 
     if(toWide || toHigh)
     {
-        console.log("to ");
         let xScale = (windowDimension.width)/(selectionWidth*1.2);
         let yScale = (windowDimension.height)/(selectionHeight*1.2);
         let desiredScale = Math.min(xScale, yScale); 
@@ -55,6 +57,7 @@ export function scroll_to_selection()
 }
 
 //Function that handles the selection of elements
+//Select on mouseevent
 export function select(event)
 {
     let element = diagview.get_element(event.target.id);
@@ -74,6 +77,7 @@ export function select(event)
     draw();
 }
 
+//Select element via code
 export function select_view(tblview)
 {
     let element = diagview.get_element(tblview.id);
