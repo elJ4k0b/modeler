@@ -1,17 +1,26 @@
 import draw, { toggel_debuginfo } from "./draw.js";
 import { scroll_to_selection, select_view } from "./select.js";
 import { diagview } from "./diagramview.js";
-import { grid_to_pos, size, grid_size } from "./grid.js";
+import { grid_to_pos, size, grid_size, pos_to_grid } from "./grid.js";
 import Tableview from "./tableview.js";
 import LineView from "./lineview.js";
 import ContainerView from "./containerview.js";
 import zoomHandler from "./Zoom.js";
 import { Type, typeMap} from "./Types.js";
+import { log, set_environment } from "./Log.js";
 
 //inverses the current state of debug information visibility
 export function toggle_debug()
 {
     toggel_debuginfo();
+    draw();
+}
+
+//empty diagram
+export function clear_diagram(types = false)
+{
+    diagview.reset();
+    if(types) typeMap.clear();
     draw();
 }
 
@@ -52,17 +61,12 @@ export function toggle_debug()
 
  export function move_element(id, x, y, grid = true)
 {
-    try {
-        if(grid)
-        {
-            x = grid_to_pos(x);
-            y = grid_to_pos(y);
-        }
-        diagview.get_tableview(id).move(x,y);
+    if(grid)
+    {
+        x = grid_to_pos(x);
+        y = grid_to_pos(y);
     }
-    catch(error){
-        move_container(id, x, y, false);
-    }
+    diagview.move(id, x, y);
     draw();
 }
 
@@ -73,7 +77,7 @@ export function move_container(id, x, y, grid = true)
         x = grid_to_pos(x);
         y = grid_to_pos(y);
     }
-    diagview.get_container(id).move(x,y);
+    diagview.move(id, x, y);
     draw();
 }
 
@@ -156,6 +160,7 @@ export function add_container(id, title, pTypeId, x, y, width, height, container
 {
     x = grid_to_pos(x);
     y = grid_to_pos(y);
+    log("Hello");
     let container = diagview.get_container(containerId);
     let cleanTypeId = _cleanType(pTypeId);
     let element = new ContainerView(id, title, cleanTypeId, x, y, grid_size(width), grid_size(height), container);
@@ -164,6 +169,7 @@ export function add_container(id, title, pTypeId, x, y, width, height, container
         container.add(element);
     }
     diagview.add_element(element);
+    select_view(element);
     draw();
 }
 
@@ -218,4 +224,63 @@ function _cleanType(typeIdString)
     typeIdString = typeIdString.replace(/\s/g, '');
     typeIdString = "c_"+typeIdString;
     return typeIdString;
+}
+
+
+/**
+ * Callback Funktionen bei Interaktion mit Diagramm
+ * 
+ * notify() bündelt die callback calls
+ */
+
+export function notify(type, args)
+{
+    switch (type)
+    {
+        case "start":
+            start_selected(args.id);
+            break;
+        case "move":
+            content_moved(args.id, pos_to_grid(args.x), pos_to_grid(args.y));
+            break;
+        case "select":
+            content_selected(args.id);
+            break;
+        case "container-remove":
+            content_removed_from_container(args.elementId, args.containerId);
+            break;
+        case "container-add":
+            content_added_to_container(args.elementId, args.containerId);
+    }
+}
+
+
+function content_selected(id)
+{
+    log(`content ${id} was selected`);
+}
+
+function start_selected(id)
+{
+    log(`content ${id} is starting element`);
+}
+
+function content_moved(id, x, y)
+{
+    log(`content ${id} moved to ${x} ${y}`);
+}
+
+function container_resized(id, w, h)
+{
+
+}
+
+function content_added_to_container(id, containerid)
+{
+    log(`content ${id} added to container ${containerid}`);
+}
+
+function  content_removed_from_container(id, containerid)
+{
+    log(`content ${id} removed from container ${containerid}`);
 }
