@@ -7,8 +7,8 @@ class ContainerView
         this.id = pId;
         this.container = pContainer;
         this.position = {
-            left: pX,
             top: pY,
+            left: pX,
         }
         this.dimension = {
             width: pWidth,
@@ -72,7 +72,7 @@ class ContainerView
         let most_left = children[0];
         let most_right = children[children.length-1];
         this.max.x = most_left.position.left - grid_size(1);
-        this.min.width = most_right.position.left + most_right.dimension.width - this.max.x + grid_size(1);
+        this.min.width = most_right.position.left + most_right.dimension.width - this.position.left + grid_size(1);
         
         children.sort((a,b) => {return a.position.top - b.position.top});
         let most_top = children[0];
@@ -89,6 +89,21 @@ class ContainerView
         let upscale = x < this.position.left || width > this.dimension.width;
         let in_bounds = x <= this.max.x && width >= this.min.width ;
         if(upscale || in_bounds)
+        {
+            this.position.left = x;
+            this.dimension.width = width;
+            success.x = true;
+        }
+        let in_bounds_right = width >= this.min.width && x == this.position.left;
+        let in_bounds_left = x <= this.max.x && width >= this.min;
+
+        if(in_bounds_right)
+        {
+            this.dimension.width = width;
+            success.x = true;
+        }
+
+        if(in_bounds_left)
         {
             this.position.left = x;
             this.dimension.width = width;
