@@ -142,7 +142,6 @@ class CustomEvents extends MouseEvent
             case TOOLS.drag:
                 enddrag(event);
                 this.checkDropTargets(event);
-                notify("move", {id: event.target.id, x: event.clientX, y: event.clientY});
                 break;
             case TOOLS.scale:
                 endscale(event);

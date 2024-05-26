@@ -363,6 +363,7 @@ function _cleanType(typeIdString)
 export function notify(type, args)
 {
     try {
+        console.log(type);
         switch (type)
         {
             case "start":
@@ -391,6 +392,9 @@ export function notify(type, args)
                 break;
             case "container-add":
                 content_added_to_container(args.elementId, args.containerId);
+                break;
+            case "container-resize":
+                container_resized(args.id, args.width/size, args.height/size);
         }
     }
     catch(error)
@@ -414,12 +418,14 @@ function start_selected(id)
 
 function content_moved(id, x, y)
 {
-    log(`content ${id} moved to ${x} ${y}`);
+    log(`content ${id} moved to ${x}, ${y}`);
+	B4A.CallSub('ContentMoved', true, id, x, y);
 }
 
 function container_resized(id, w, h)
 {
-
+    log(`content ${id} resized to ${w}, ${h}}`);
+	B4A.CallSub('ContainerResized', true, id, w, h);
 }
 
 function content_added_to_container(id, containerid)

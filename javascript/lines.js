@@ -9,6 +9,35 @@ let arrow_types = {
     "line-dashed-arrowed": "line-dashed-arrowed",
 }
 
+export function create_start_marker()
+{
+    const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+    const width = 8;
+    const height = 8;
+
+    marker.setAttribute("id", "start");
+    marker.setAttribute("viewBox", "-2 -2 20 20");
+    marker.setAttribute("refX", width);
+    marker.setAttribute("refY", height);
+    marker.setAttribute("markerUnits", "strokeWidth");
+    marker.setAttribute("markerWidth", width);
+    marker.setAttribute("markerHeight", height);
+    marker.setAttribute("orient", "0");
+
+    let container = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    container.setAttribute("width", 32);
+    container.setAttribute("height", 32);
+    container.setAttribute("fill", "#1f6aff");
+    container.setAttribute("viewbox", "0 0 16 16");
+
+    let path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", "M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z");
+
+    container.appendChild(path);
+    return container;
+    //'<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="%231f6aff" class="bi bi-geo-alt-fill" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/><svg>'
+}
+
 
 function _create_marker()
 {
@@ -72,6 +101,7 @@ export function drawline_at(line, startpoint, endpoint, bendpoints = [])
     const svg = document.getElementById("lines");
     let has_marker = document.querySelector("#arrowhead") != null;
     if (!has_marker)svg.appendChild(_create_marker());
+
     let all_points = [];
     bendpoints.sort((a,b) => _distance(startpoint, a) - _distance(startpoint, b));
     all_points.push(startpoint);
@@ -121,6 +151,8 @@ export function drawline_at(line, startpoint, endpoint, bendpoints = [])
     path.setAttribute("d", pathData);
     svg.appendChild(path);
     svg.innerHTML +="";
+
+    return path;
 }
 
 function calculateStartPosition(all_points)

@@ -1,3 +1,4 @@
+import { notify } from "./API.js";
 import { attach_to_grid, grid_size } from "./grid.js";
 
 class ContainerView
@@ -127,17 +128,21 @@ class ContainerView
         return success;
     }
 
+
+    //diese funktion passt besser in diagramview 
     set_position_and_size(x, y, width, height)
     {
         x = Math.min(this.max.x, x);
         y = Math.min(this.max.y, y);
         width = Math.max(this.min.width, width);
         height = Math.max(this.min.height, height); 
-
+        
         this.dimension.width = attach_to_grid(width);
         this.dimension.height = attach_to_grid(height);
         this.position.left = attach_to_grid(x);
         this.position.top = attach_to_grid(y);
+        notify("container-resize", {id: this.id, width:this.dimension.width, height:this.dimension.height});
+        notify("content-move", {id: this.id, x:this.position.left, y:this.position.top});
     }
 }
 

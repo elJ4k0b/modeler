@@ -1,5 +1,5 @@
 import { diagview } from "./diagramview.js";
-import { drawline_at } from "./lines.js";
+import { create_start_marker, drawline_at } from "./lines.js";
 import { grid_size, size } from "./grid.js";
 import zoomHandler from "./Zoom.js";
 import * as style from "./styles.js"
@@ -398,6 +398,25 @@ function draw_lines()
                 continue;
             }
             drawline_at(line, {x:start.position.left, y:start.position.top}, {x:end.position.left, y:end.position.top}, line.bendpoints);
+            if(line == diagview.startElement)
+            {
+                let path = document.getElementById(line.id);
+                if(!path) return;
+
+                let pathLength = path.getTotalLength();
+                let point = path.getPointAtLength(0.5*pathLength);
+
+                let marker = create_start_marker();
+                
+                marker.setAttribute("transform", `matrix(2, 0, 0, 2, ${point.x-16}, ${point.y + 16})`);
+                svg.appendChild(marker);
+
+
+            }
+            else
+            {
+                
+            }
         }
         catch(error)
         {
