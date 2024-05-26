@@ -16,6 +16,7 @@ class Diagramview {
         this.selected_elements = new Map();
         this.prevStartElement = null;
         this.startElement  = null;
+        this.highlightedElement = null;
     }
     reset()
     {
@@ -27,11 +28,12 @@ class Diagramview {
         this.selected_elements = new Map();
         this.prevStartElement = null;
         this.startElement  = null;
+        this.highlightedElement = null;
     }
 
     set_start(id)
     {
-        let element = this.tableviews.get(id);
+        let element = this.elements.get(id);
         if(!element) console.warn("id " + id + " does not belong to a diagram element");
         this.prevStartElement = this.startElement;
         this.startElement = element;
@@ -39,6 +41,11 @@ class Diagramview {
         notify("start", {id});
     }
 
+    remove_start()
+    {
+        notify("start-deselect", {id: this.startElement.id});
+        this.startElement = null;
+    }
     get_tableview(id)
     {
         
@@ -74,22 +81,14 @@ class Diagramview {
                 break;
             case LineView:
                 this.lineviews.set(element.id, element);
+                let startpoint = this.get_tableview(element.startId).position;
+                let endpoint = this.get_tableview(element.endId).position;
+                if(!startpoint || !endpoint) return;
+                let points = [{x: startpoint.left, y: startpoint.top}, {x: endpoint.left, y: endpoint.top}]
+                element.update(points);
                 break;
             case Tableview:
                 this.tableviews.set(element.id, element);
-                /*if(this.startElement != null)
-                {
-                    let id = Math.max(...this.lineviews.keys(), -1)+1;
-                    let newLine = new LineView (id, this.startElement.id,  element.id, "standard");
-                    this.lineviews.set(newLine.id, newLine);
-                    this.tableviews.set(element.id, element);
-                }
-                else 
-                {
-                    this.tableviews.set(element.id, element);
-                    this.set_start(element.id);
-                }*/
-                
                 break;
             default:
                 console.error("invalid element");
@@ -120,9 +119,9 @@ class Diagramview {
                 break;
             case Tableview:
                 this.tableviews.delete(id);
-                if(element = this.startElement)
+                if(element == this.startElement)
                 {
-                    this.startElement = this.prevStartElement;
+                    notify("start-deselect", element.id);
                 }
                 //remove all lines that start or end in the deleted element
                 for(let line of this.lineviews.values())
@@ -151,6 +150,26 @@ class Diagramview {
         console.error("Only table elements can be locked");       
     }
 
+    highlight(id, bool = true)
+    {
+        let element = this.elements.get(id);
+        if(!element) return;
+        
+        this.highlighted &&= false;
+        
+        element.highlighted = bool;
+        this.highlightedElement = bool ? element: null;
+
+        for(let cont of this.containers.values())
+        {
+            console.log(cont.highlighted);
+        }
+
+        let type  = bool? "highlight" : "highlight-deselect";
+        log(type);
+        notify(type, {id});
+    }
+
     is_selected(id)
     {   
         return this.elements.get(id).selected;
@@ -159,9 +178,19 @@ class Diagramview {
     {   
         let element = this.elements.get(id);
         if(!element){return}
+        
+        if(bool)
+        {
+            this.selected_elements.set(id, element);
+            notify("select", {id});  
+        } 
+        else if(!bool && element.selected)
+        {
+            notify("content-deselect", {id});
+            this.selected_elements.delete(id);
+        } 
+        else this.selected_elements.delete(id);
         element.selected = bool;
-        bool? this.selected_elements.set(id, element): this.selected_elements.delete(id);
-        if(bool) notify("select", {id});
     }
 
     removeFromCurrentContainer(elementId)

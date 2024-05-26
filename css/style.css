@@ -8,17 +8,21 @@
 
 html, body {
     overflow: hidden;
+    margin: 0;
 }
 
 svg:not(:root) {
     overflow: visible !important;
 }
 
-* {
+*:not(.toucharea) {
     box-sizing: border-box;
     scroll-behavior: smooth;
     touch-action: none !important;
+    user-select: none;
 }
+
+
 
 #viewport {
    background-image: radial-gradient(#ccc 10%, transparent 10%),
@@ -31,6 +35,14 @@ svg:not(:root) {
 
 .transition-move {
     transition: all 0.5s ease;
+}
+
+#lines > path {
+    pointer-events: all;
+}
+
+textPath {
+    font-family: sans-serif;
 }
 
 .card {   
@@ -98,10 +110,8 @@ svg:not(:root) {
 }
 .card-start::before {
     position: absolute;
-    width: 10%;
-    height: 10%;
-    top: 10%;
-    right: 30%;
+    top: min(10%, 30px);
+    right: min(10%,30px);
     z-index: 5;
     content: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="%231f6aff" class="bi bi-geo-alt-fill" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>');
 }
@@ -146,3 +156,17 @@ svg:not(:root) {
 .shadow-small {
     box-shadow: 0 0 0.3rem rgba(0, 0, 0, 0.1);
 }
+
+.highlighted {
+    opacity: 1;
+}
+
+.container:not(.highlighted)
+{
+    opacity: .5;
+}
+
+@keyframes example {
+    from {opacity: 0.25;}
+    to {opacity: 1;}
+  }

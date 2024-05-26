@@ -1,5 +1,3 @@
-import { log } from "./Log.js";
-
 const SCALING_CONSTANT = 0.0005;
 const DEFAULT_VIEWPORT_OFFSET = -50000;
 const MAX_ZOOM = 4;
@@ -108,8 +106,8 @@ class ZoomHandler
             element.style.transform = matrix.toString();
         }catch (error)
         {
-            log(error);
-            log(matrix);
+            console.log(error);
+            console.log(matrix);
         }
         
     }
@@ -224,7 +222,7 @@ class ZoomHandler
 
     start_pan(event)
     {
-        log("startpan");
+        console.log("startpan");
         let start = {};
         start.x = event.clientX;
         start.y = event.clientY;
@@ -265,7 +263,7 @@ class ZoomHandler
         // let dim = this.getWindowDimension();
 
         // rect.style.widht = `${dim.width}px`;
-        // log(this.getMargin());
+        // console.log(this.getMargin());
         // rect.style.height = `${dim.height}px`;
         // rect.style.top = `${top}%`;
         // rect.style.left = `${left}%`;

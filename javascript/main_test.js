@@ -1,4 +1,4 @@
-import { log } from "./Log.js"; 
+
 //Global diagram object that serves as interface for the data layer 
 let diagview;
 
@@ -235,7 +235,7 @@ function startscale(event, elements, index)
     {
         event.preventDefault();
     }
-    log(event.target);
+    console.log(event.target);
     selected_tool = TOOLS.scale;
     scaledElements.push(elements);
 

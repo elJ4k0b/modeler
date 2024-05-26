@@ -1,7 +1,8 @@
 import zoomHandler from "./Zoom.js";
+import ContainerView from "./containerview.js";
 import { diagview } from "./diagramview.js";
 import draw from "./draw.js";
-import { grid_size } from "./grid.js";
+import { attach_to_grid, grid_size, pos_to_grid } from "./grid.js";
 
 //Functions that handle the scaling of elements
 
@@ -14,7 +15,7 @@ let offset = {};
 export function startscale(event)
 {
     let index = event.target.getAttribute("scaling-index");
-
+    
     if(event.type == "touchstart")
     {
         event.preventDefault();
@@ -24,11 +25,11 @@ export function startscale(event)
     {
         event.preventDefault();
     }
-
+    
     //Only for circle scaling nobs
     let currPosX = event.target.getAttribute("cx");
     let currPosY = event.target.getAttribute("cy");
-
+    
     offset.x = event.clientX/zoomHandler.zoomFactor - parseInt(currPosX);
     offset.y = event.clientY/zoomHandler.zoomFactor - parseInt(currPosY);
     
@@ -39,7 +40,7 @@ export function startscale(event)
 
 export function scale(event)
 {
-    scaledElements = diagview.get_selected_elements();
+    scaledElements = [...diagview.get_selected_elements()].filter((element) => element instanceof ContainerView);
     if(scaledElements == null) return;
 
     let mousepos = {x: event.clientX/zoomHandler.zoomFactor, y: event.clientY/zoomHandler.zoomFactor};
@@ -89,6 +90,7 @@ export function scale(event)
             default:
                 return;
         }
+
         let success = element.resize(newWidth, newHeight, newX, newY);
         if(success.x) scaleStartX = mousepos.x;
         if(success.y) scaleStartY = mousepos.y;
@@ -98,5 +100,11 @@ export function scale(event)
 
 export function endscale ()
 {
+    if(scaledElements == null) return;
+    for(let element of scaledElements)
+    {
+        element.set_position_and_size(element.position.left, element.position.top, element.dimension.width, element.dimension.height);
+    }
     scaledElements = [];
+    draw();
 }

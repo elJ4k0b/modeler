@@ -1,13 +1,13 @@
 import draw, { toggel_debuginfo } from "./draw.js";
 import { scroll_to_selection, select_view } from "./select.js";
 import { diagview } from "./diagramview.js";
-import { grid_to_pos, size, grid_size, pos_to_grid } from "./grid.js";
+import { grid_to_pos, size, grid_size, pos_to_grid, grid_to_poscenter} from "./grid.js";
 import Tableview from "./tableview.js";
 import LineView from "./lineview.js";
 import ContainerView from "./containerview.js";
 import zoomHandler from "./Zoom.js";
 import { Type, typeMap} from "./Types.js";
-import { log, set_environment } from "./Log.js";
+import { log } from "./Log.js";
 
 //inverses the current state of debug information visibility
 export function toggle_debug()
@@ -19,27 +19,62 @@ export function toggle_debug()
 //empty diagram
 export function clear_diagram(types = false)
 {
-    diagview.reset();
-    if(types) typeMap.clear();
-    draw();
+    try {
+        diagview.reset();
+        if(types) typeMap.clear();
+        draw();
+    }catch(error)
+    {
+        log(error, "warning");    
+    }
 }
 
 /*=================================
  *Functions to interact with diagram elements 
  *=================================*/
- export function set_start (id)
- {
-    diagview.set_start(id);   
-    draw();
- }
 
- export function select_element(id, bool = true)
- {
+export function highlight_container(id, bool=true)
+{
+    try {
+        diagview.highlight(id, bool);
+        draw();
+    }
+    catch(error)
+    {
+        log(error, "warning");
+    }
+}
+
+
+export function set_start (id, bool = true)
+{
+try {
+    if(bool == false)
+    {
+        diagview.remove_start();
+    }
+    else {
+        diagview.set_start(id);   
+    }
+    draw();
+}catch(error)
+{
+    log(error, "warning");
+}
+}
+
+export function select_element(id, bool = true)
+{
+try {
     let element = _try_get(id);
     if(!element) return;
     diagview.select(id, bool);
     draw();
- }
+}catch(error)
+{
+    log(error, "warning");
+}
+}
 
  function lock_element(id)
  {
@@ -61,32 +96,79 @@ export function clear_diagram(types = false)
 
  export function move_element(id, x, y, grid = true)
 {
-    if(grid)
+    try {
+        if(grid)
+        {
+            x = grid_to_pos(x);
+            y = grid_to_pos(y);
+        }
+        diagview.move(id, x, y);
+        draw();
+    }catch(error)
     {
-        x = grid_to_pos(x);
-        y = grid_to_pos(y);
+        log(error, "warning");
     }
-    diagview.move(id, x, y);
-    draw();
 }
 
-export function move_container(id, x, y, grid = true)
+export function move_container(id, x, y, grid = true, content=false)
 {
-    if(grid)
+    try {
+        if(grid)
+        {
+            x = grid_to_pos(x);
+            y = grid_to_pos(y);
+        }
+        if(!content)
+        {
+            let container = _try_get(id);
+            if(!container) return;
+            let content = [...container.children.values()];
+            for(let element of content) container.remove(element);
+            diagview.move(id, x, y);
+            for(let element of content) container.add(element);
+        }
+        else {
+
+            diagview.move(id, x, y);
+        }
+        draw();
+    }catch(error)
     {
-        x = grid_to_pos(x);
-        y = grid_to_pos(y);
+        log(error, "warning");
     }
-    diagview.move(id, x, y);
-    draw();
 }
 
-
-export function resize_conainer(id, width, height)
+export function move_relation(pId, pBendPoints = [])
 {
-    if(diagview.get_container(id) == null) return;
-    diagview.get_container(id).resize(grid_size(width), grid_size(height));
-    draw();
+    try {
+        let cleanTypeId = _cleanType(pTypeId);
+        for(let bendPoint of pBendPoints)
+        {
+            bendPoint.x = grid_to_poscenter(bendPoint.x);
+            bendPoint.y = grid_to_poscenter(bendPoint.y);
+            
+        }
+        let line = new LineView(pId, pStartId, pEndId, cleanTypeId, pTitle, pBendPoints);
+    
+        diagview.add_element(line);
+        draw();
+    }catch(error)
+    {
+        log(error, "warning");
+    }
+}
+
+export function resize_container(id, width, height)
+{
+    try {
+        let container = diagview.get_container(id);
+        if(container == null) return;
+        container.resize(grid_size(width), grid_size(height),container.position.left, container.position.top);
+        draw();
+    }catch(error)
+    {
+        log(error, "warning");
+    }
 }
 
 /*
@@ -101,10 +183,15 @@ export function resize_conainer(id, width, height)
 
 export function register_type(pTypeId, pTypeLabel, pTypeLine, pTypeIcon64)
 {
-    let cleanId = _cleanType(pTypeId);
-    let type = new Type(cleanId, pTypeLabel, pTypeLine, pTypeIcon64);
-    typeMap.set(type.id, type);
-    draw();
+    try {
+        let cleanId = _cleanType(pTypeId);
+        let type = new Type(cleanId, pTypeLabel, pTypeLine, pTypeIcon64);
+        typeMap.set(type.id, type);
+        draw();
+    }catch(error)
+    {
+        log(error, "warning");
+    }
 }
 
 /*
@@ -120,9 +207,14 @@ export function register_type(pTypeId, pTypeLabel, pTypeLine, pTypeIcon64)
 */
 export function set_visible_range_margin(pTopRatio,  pRightRatio, pBottomRatio, pLeftRatio)
 {
-	zoomHandler.set_viewport_margin(pTopRatio/100, pBottomRatio/100, pLeftRatio/100, pRightRatio/100);
-    let diagram_empty = diagview.elements.size <= 0;
-    if(!diagram_empty) scroll_to_selection();
+    try {
+        zoomHandler.set_viewport_margin(pTopRatio/100, pBottomRatio/100, pLeftRatio/100, pRightRatio/100);
+        let diagram_empty = diagview.elements.size <= 0;
+        if(!diagram_empty) scroll_to_selection();
+    }catch(error)
+    {
+        log(error, "warning");
+    }
 }
 
 /*=================================
@@ -132,84 +224,119 @@ export function set_visible_range_margin(pTopRatio,  pRightRatio, pBottomRatio, 
  
  export function remove_element(id)
  {
-     diagview.remove_element(id);
-     draw();
+    try {
+        diagview.remove_element(id);
+        draw();
+    }catch(error)
+    {
+        log(error, "warning");
+    }
  }
 
  export function add_element(id, title, pTypeId, x, y, containerId, start = false)
 {
-    x = grid_to_pos(x);
-    y = grid_to_pos(y);
-    if(start)
+    try {
+        x = grid_to_pos(x);
+        y = grid_to_pos(y);
+        if(start)
+        {
+            set_start(id);
+        }
+        let container = diagview.get_container(containerId);
+        let cleanTypeId = _cleanType(pTypeId);
+        let tableview = new Tableview(id, title, cleanTypeId, x, y, size/2, size/2, container);
+        if(container)
+        {
+            container.add(tableview);
+        }
+        diagview.add_element(tableview);
+        select_view(tableview);
+        draw();
+    }catch(error)
     {
-        set_start(id);
+        log(error, "warning");
     }
-    let container = diagview.get_container(containerId);
-    let cleanTypeId = _cleanType(pTypeId);
-    let tableview = new Tableview(id, title, cleanTypeId, x, y, size/2, size/2, container);
-    if(container)
-    {
-        container.add(tableview);
-    }
-    diagview.add_element(tableview);
-    select_view(tableview);
-    draw();
 }
 
 export function add_container(id, title, pTypeId, x, y, width, height, containerId)
 {
-    x = grid_to_pos(x);
-    y = grid_to_pos(y);
-    log("Hello");
-    let container = diagview.get_container(containerId);
-    let cleanTypeId = _cleanType(pTypeId);
-    let element = new ContainerView(id, title, cleanTypeId, x, y, grid_size(width), grid_size(height), container);
-    if(container)
+    try {
+        x = grid_to_pos(x);
+        y = grid_to_pos(y);
+        log("Hello");
+        let container = diagview.get_container(containerId);
+        let cleanTypeId = _cleanType(pTypeId);
+        let element = new ContainerView(id, title, cleanTypeId, x, y, grid_size(width), grid_size(height), container);
+        if(container)
+        {
+            container.add(element);
+        }
+        diagview.add_element(element);
+        select_view(element);
+        draw();
+    }catch(error)
     {
-        container.add(element);
+        log(error, "warning");
     }
-    diagview.add_element(element);
-    select_view(element);
-    draw();
 }
 
 export function add_relation(pId, pTitle, pTypeId, pStartId, pEndId, pBendPoints = [])
 {
-    let cleanTypeId = _cleanType(pTypeId);
-    for(let bendPoint of pBendPoints)
+    try {
+        let cleanTypeId = _cleanType(pTypeId);
+        for(let bendPoint of pBendPoints)
+        {
+            bendPoint.x = grid_to_poscenter(bendPoint.x);
+            bendPoint.y = grid_to_poscenter(bendPoint.y);
+            
+        }
+        let line = new LineView(pId, pStartId, pEndId, cleanTypeId, pTitle, pBendPoints);
+    
+        diagview.add_element(line);
+        draw();
+    }catch(error)
     {
-        bendPoint.x = grid_to_pos(bendPoint.x);
-        bendPoint.y = grid_to_pos(bendPoint.y);
-        
+        log(error, "warning");
     }
-    let line = new LineView(pId, pStartId, pEndId, cleanTypeId, pTitle, pBendPoints);
-
-    diagview.add_element(line);
-    draw();
 }
 
 export function set_title(id, title)
 {
-    let element = _try_get(id);
-    element.title = title;
-    draw();
+    try {
+        let element = _try_get(id);
+        element.title = title;
+        draw();
+    }catch(error)
+    {
+        log(error, "warning");
+    }
 }
 
 export function add_to_container(id, containerid)
 {
-	 let element = _try_get(id);
-     let container = _try_get(containerid);
-     if(!element || !container) throw new Error("element or container with id " + id + " not found.");
-     container.add(element);
-     element.container = container;
+    try {
+        let element = _try_get(id);
+        let container = _try_get(containerid);
+        if(!element || !container) throw new Error("element or container with id " + id + " not found.");
+        container.add(element);
+        element.container = container;
+    }catch(error)
+    {
+        log(error, "warning");
+    }
 }
 
 export function remove_from_container(id, containerid)
 {
-	 let element = _try_get(id);
-     let container = _try_get(containerid);
-     container.remove(element);
-     element.container = null;
+    try {
+        let element = _try_get(id);
+        let container = _try_get(containerid);
+        container.remove(element);
+        element.container = null;
+    }catch(error)
+    {
+        log(error, "warning");
+    }
 }
 
 function _try_get(id)
@@ -235,22 +362,40 @@ function _cleanType(typeIdString)
 
 export function notify(type, args)
 {
-    switch (type)
+    try {
+        switch (type)
+        {
+            case "start":
+                start_selected(args.id);
+                break;
+            case "move":
+                content_moved(args.id, pos_to_grid(args.x), pos_to_grid(args.y));
+                break;
+            case "select":
+                content_selected(args.id);
+                break;
+            case "start-deselect":
+                start_deselected(args.id);
+                break;
+            case "content-deselect":
+                content_deselected(args.id);
+                break;
+            case "highlight":
+                content_highlighted(args.id);
+                break;
+            case "highlight-deselect":
+                highlight_deselected(args.id);
+                break;
+            case "container-remove":
+                content_removed_from_container(args.elementId, args.containerId);
+                break;
+            case "container-add":
+                content_added_to_container(args.elementId, args.containerId);
+        }
+    }
+    catch(error)
     {
-        case "start":
-            start_selected(args.id);
-            break;
-        case "move":
-            content_moved(args.id, pos_to_grid(args.x), pos_to_grid(args.y));
-            break;
-        case "select":
-            content_selected(args.id);
-            break;
-        case "container-remove":
-            content_removed_from_container(args.elementId, args.containerId);
-            break;
-        case "container-add":
-            content_added_to_container(args.elementId, args.containerId);
+        log(error, "warning");
     }
 }
 
@@ -258,11 +403,13 @@ export function notify(type, args)
 function content_selected(id)
 {
     log(`content ${id} was selected`);
+	B4A.CallSub('ContentSelected', true, id);
 }
 
 function start_selected(id)
 {
     log(`content ${id} is starting element`);
+	B4A.CallSub('CurrentSelected', true, id);
 }
 
 function content_moved(id, x, y)
@@ -278,9 +425,36 @@ function container_resized(id, w, h)
 function content_added_to_container(id, containerid)
 {
     log(`content ${id} added to container ${containerid}`);
+	B4A.CallSub('ContentAddedToContainer', true, id, containerid);
 }
 
 function  content_removed_from_container(id, containerid)
 {
     log(`content ${id} removed from container ${containerid}`);
 }
+
+
+function content_deselected(id)
+{
+    log(`content ${id} was deselected`);
+    B4A.CallSub('ContentDeselected', true, id);
+}
+
+function start_deselected(id)
+{
+    log(`start was removed from content ${id}`);
+    B4A.CallSub('StartDeselected', true, id);
+}
+
+function highlight_deselected(id)
+{
+    log(`highlight was removed from content ${id}`);
+    B4A.CallSub('HighlightDeselected', true, id);
+}
+
+function content_highlighted(id)
+{
+    log(`highlight was added to content ${id}`);
+    B4A.CallSub('HighlightSelected', true, id);
+}
+

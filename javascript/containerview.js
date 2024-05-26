@@ -1,4 +1,4 @@
-import { grid_size } from "./grid.js";
+import { attach_to_grid, grid_size } from "./grid.js";
 
 class ContainerView
 {
@@ -15,8 +15,8 @@ class ContainerView
             height: pHeight
         }
         this.min  = {
-            width: 0,
-            height: 0,
+            width: grid_size(1),
+            height: grid_size(1),
         }
         this.max = {
             x: -Math.max(),
@@ -27,6 +27,7 @@ class ContainerView
         this.typeId = pType;
         this.selected = false;
         this.dragged = false;
+        this.highlighted = false;
     }
     add(tblview)
     {
@@ -71,14 +72,14 @@ class ContainerView
         children.sort((a,b) => {return a.position.left - b.position.left});
         let most_left = children[0];
         let most_right = children[children.length-1];
-        this.max.x = most_left.position.left - grid_size(1);
-        this.min.width = most_right.position.left + most_right.dimension.width - this.position.left + grid_size(1);
+        this.max.x = most_left.position.left //- grid_size(1);
+        this.min.width = most_right.position.left + most_right.dimension.width - this.position.left// + grid_size(1);
         
         children.sort((a,b) => {return a.position.top - b.position.top});
         let most_top = children[0];
         let most_bottom = children[children.length - 1];
-        this.max.y = most_top.position.top - grid_size(1);
-        this.min.height = most_bottom.position.top + most_bottom.dimension.height - this.max.y + grid_size(1);    
+        this.max.y = most_top.position.top //- grid_size(1);
+        this.min.height = most_bottom.position.top + most_bottom.dimension.height - this.max.y// + grid_size(1);    
     
     }
 
@@ -124,6 +125,19 @@ class ContainerView
         }
         this.update_bounds();
         return success;
+    }
+
+    set_position_and_size(x, y, width, height)
+    {
+        x = Math.min(this.max.x, x);
+        y = Math.min(this.max.y, y);
+        width = Math.max(this.min.width, width);
+        height = Math.max(this.min.height, height); 
+
+        this.dimension.width = attach_to_grid(width);
+        this.dimension.height = attach_to_grid(height);
+        this.position.left = attach_to_grid(x);
+        this.position.top = attach_to_grid(y);
     }
 }
 

@@ -58,7 +58,12 @@ class CustomEvents extends MouseEvent
     {
         super.handleLongPress(pointer, event);
         let element = diagview.get_element(event.target.id);
-        if(!element) return;
+        if(!element)
+        {
+            diagview.remove_start();
+            draw();
+            return;
+        }
         diagview.set_start(element.id);
         draw();
     }

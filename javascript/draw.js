@@ -4,6 +4,7 @@ import { grid_size, size } from "./grid.js";
 import zoomHandler from "./Zoom.js";
 import * as style from "./styles.js"
 import { typeMap } from "./Types.js";
+import { log } from "./Log.js";
 
 let debug = true;
 
@@ -43,6 +44,25 @@ function draw_container(container, div = document.createElement("div"))
         div.classList.remove("transition-move");
     }
 
+    if(container == diagview.startElement)
+    {
+        div.classList.remove("shadow-medium");
+        div.classList.add("card-start"); 
+    }
+    else
+    {
+        div.classList.remove("card-start");
+    }
+
+    if(container.highlighted)
+    {
+        div.classList.add("highlighted");
+    } 
+    else
+    {
+        div.classList.remove("highlighted");
+    }
+
     let titleContainer = div.querySelector(".container-title")
     if(titleContainer)
     {
@@ -69,7 +89,7 @@ function draw_container(container, div = document.createElement("div"))
         div.appendChild(debugInfo);
     }
     debugInfo.innerHTML = `Width: ${container.dimension.width/size} <br> Height: ${container.dimension.height/size}
-    <br> x: ${container.position.left/size} <br> y: ${container.position.top/size}`;
+    <br> x: ${container.position.left/size} <br> y: ${container.position.top/size} <br> id: ${container.id}`;
     debugInfo.classList.add("debug-info");
     if(!debug) div.removeChild(debugInfo);
 
@@ -168,7 +188,7 @@ function draw_element(tableview, div = document.createElement("div"))
         div.appendChild(debugInfo);
     }
     debugInfo.innerHTML = `Width: ${tableview.dimension.width/size} Height: ${tableview.dimension.height/size}
-    <br> x: ${tableview.position.left/size} <br> y: ${tableview.position.top/size}`;
+    <br> x: ${tableview.position.left/size} <br> y: ${tableview.position.top/size} <br> id: ${tableview.id}`;
     debugInfo.classList.add("debug-info");
     if(!debug) div.removeChild(debugInfo);
 
@@ -251,7 +271,9 @@ function draw_overlay() {
     overlayContainerSvg.setAttribute("height","100%");
     overlayContainerSvg.setAttribute("transform","matrix(1, 0, 0, 1, 50000, 50000)");
 
-    for(let view of diagview.elements.values())
+    let overlayableElements = [...diagview.containers.values(), ...diagview.tableviews.values()];
+
+    for(let view of overlayableElements)
     {
         let group = overlayContainerSvg.querySelector(`[overlay-id="${view.id}"]`);
 
@@ -354,78 +376,36 @@ function draw_lines()
     svg.setAttribute("width","100%");
     svg.setAttribute("height","100%");
     svg.innerHTML = "";
+
+    let labelContainer = document.createElementNS("http://www.w3.org/2000/svg","text");
+    labelContainer.setAttribute("dy", "-20");
     
     for(let line of diagview.lineviews.values())
     {
-        let start = diagview.get_tableview(line.startId);
-        let end = diagview.get_tableview(line.endId);
+        let label = document.createElementNS("http://www.w3.org/2000/svg", "textPath");
+        label.setAttribute("href", "#"+line.id);
+        label.setAttribute("text-anchor", "middle");
+        label.setAttribute("startOffset", "50%");
+        label.innerHTML = line.title;
+        labelContainer.appendChild(label);
 
-        if(start == undefined ||end == undefined)
+        try {
+            let start = diagview.get_tableview(line.startId);
+            let end = diagview.get_tableview(line.endId);
+    
+            if(start == undefined ||end == undefined)
+            {
+                continue;
+            }
+            drawline_at(line, {x:start.position.left, y:start.position.top}, {x:end.position.left, y:end.position.top}, line.bendpoints);
+        }
+        catch(error)
         {
+            log(error, "warning");
             continue;
         }
-        let startPosY = 0;
-        let startPosX = 0;
-    
-        let endPosY = 0;
-        let endPosX = 0;
-    
-        //Check relative position
-        let deltaY = start.position.top - end.position.top;
-        let deltaX = start.position.left - end.position.left;
-    
-        //Pfeil entspringt immer oben oder unten
-        if(deltaY < 0)
-        {
-            startPosY = start.position.top + start.dimension.height;
-            startPosX = start.position.left + start.dimension.width/2;
-        }
-        //SONDERFALL: gleiche Y-Koordinate
-        else if(deltaY == 0)
-        {
-            startPosY = start.position.top + start.dimension.height/2;
-            if(deltaX < 0 )
-            {
-                startPosX = start.position.left + start.dimension.width;
-            }   
-            else
-            {
-                startPosX = start.position.left;
-            }
-        }
-        else 
-        {
-            startPosY = start.position.top;
-            startPosX = start.position.left + start.dimension.width/2;
-        }
-    
-        //Pfeil kommt immer links oder rechts an 
-        if(deltaX < 0)
-        {
-            endPosX = end.position.left;
-            endPosY = end.position.top + end.dimension.height/2;    
-        }
-        //SONDERFALL: gleiche x-koordinate
-        else if (deltaX == 0) 
-        {
-            endPosX = end.position.left + end.dimension.width/2;
-            if(deltaY < 0 )
-            {
-                endPosY = end.position.top;
-            }   
-            else
-            {
-                endPosY = end.position.top + end.dimension.height;
-            }
-            
-        }   
-        else 
-        {
-            endPosX = end.position.left  + end.dimension.width;
-            endPosY = end.position.top + end.dimension.height/2;    
-        }
-        drawline_at(line, {x:startPosX, y:startPosY}, {x:endPosX, y:endPosY}, line.bendpoints);
     }
+    svg.appendChild(labelContainer);
     svg.innerHTML += "";
 }
 

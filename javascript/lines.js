@@ -1,3 +1,4 @@
+import { log } from "./Log.js";
 import { typeMap } from "./Types.js";
 import * as style from "./styles.js"
 
@@ -71,13 +72,17 @@ export function drawline_at(line, startpoint, endpoint, bendpoints = [])
     const svg = document.getElementById("lines");
     let has_marker = document.querySelector("#arrowhead") != null;
     if (!has_marker)svg.appendChild(_create_marker());
-    let all_points = [startpoint];
+    let all_points = [];
     bendpoints.sort((a,b) => _distance(startpoint, a) - _distance(startpoint, b));
-    //NUR NOCH FÜR DAS TESTEN!!!!
-    if(startpoint.y != endpoint.y && startpoint.x != endpoint.x) all_points.push({x:startpoint.x, y: endpoint.y});
+    all_points.push(startpoint);
     all_points.push(...bendpoints);
     all_points.push(endpoint);
     
+    all_points[0] = calculateStartPosition(all_points);
+    all_points[all_points.length-1] = calculateEndPosition(all_points);
+    if(all_points.length == 2 && startpoint.y != endpoint.y && startpoint.x != endpoint.x)
+        all_points.splice(1, 0, {x:all_points[0].x, y: all_points[1].y});
+
     //chop ends of
     let current_start = all_points[0];
     let direction = {};
@@ -97,6 +102,8 @@ export function drawline_at(line, startpoint, endpoint, bendpoints = [])
     new_end.x = all_points[all_points.length-2].x + direction.x - Math.sign(direction.x) * style.LINE_GAP;
     new_end.y = all_points[all_points.length-2].y + direction.y - Math.sign(direction.y) * style.LINE_GAP;
     all_points[all_points.length-1] = new_end;
+
+    line.update(all_points);
     
     let pathData = `M ${all_points[0].x} ${all_points[0].y}`;
 
@@ -107,7 +114,91 @@ export function drawline_at(line, startpoint, endpoint, bendpoints = [])
     let lineType = typeMap.get(line.typeId) || "";
     let type = arrow_types[lineType.lineStyle] || "";
     let path = _create_path(type);
+
+    path.id = line.id;
+    if(line.selected) path.setAttribute("stroke", style.OVERLAY_COLOR);
+
     path.setAttribute("d", pathData);
     svg.appendChild(path);
     svg.innerHTML +="";
+}
+
+function calculateStartPosition(all_points)
+{
+    
+    return calculatePositions(all_points[0], all_points[1]);
+
+}
+
+function calculateEndPosition(all_points)
+{
+    let endIndex = all_points.length-1;
+    let before_point = all_points[endIndex-1];
+    let end_point = all_points[endIndex];
+
+    let deltaX = before_point.x - end_point.x;
+    let deltaY = before_point.y - end_point.y;
+
+    //Pfeil kommt immer links oder rechts an 
+    if(deltaX < 0)
+    {
+        end_point.x = end_point.x;
+        end_point.y = end_point.y + style.ELEMENT_HEIGHT/2;    
+    }
+    //SONDERFALL: gleiche x-koordinate
+    else if (Math.abs(deltaX) <= style.ELEMENT_WIDTH/2) 
+    {
+        end_point.x = end_point.x + style.ELEMENT_WIDTH/2;
+        if(deltaY < 0 )
+        {
+            end_point.y = end_point.y;
+        }   
+        else
+        {
+            end_point.y = end_point.y + style.ELEMENT_HEIGHT;
+        }
+        
+    }   
+    else 
+    {
+        end_point.x = end_point.x  + style.ELEMENT_WIDTH;
+        end_point.y = end_point.y + style.ELEMENT_HEIGHT/2;    
+    }
+    return end_point;
+}
+
+function calculatePositions(point1, point2)
+{
+    let start_point = point1;
+    let second_point = point2;
+    
+    if(!second_point || !start_point) console.error("Hallo");
+
+    let deltaX = start_point.x - second_point.x;
+    let deltaY = start_point.y - second_point.y;
+
+    if(Math.abs(deltaY) <= style.ELEMENT_HEIGHT/2)
+    {
+        start_point.y = start_point.y + style.ELEMENT_HEIGHT/2;
+        if(deltaX < 0 )
+        {
+            start_point.x = start_point.x + style.ELEMENT_WIDTH;
+        }   
+        else
+        {
+            start_point.x = start_point.x;
+        }
+    }
+    else if(deltaY < 0)
+    {
+        start_point.y = start_point.y + style.ELEMENT_HEIGHT;
+        start_point.x = start_point.x + style.ELEMENT_WIDTH/2;
+    }
+    else 
+    {
+        start_point.y = start_point.y;
+        start_point.x = start_point.x + style.ELEMENT_WIDTH/2;
+    }
+
+    return {x: start_point.x, y:start_point.y};
 }

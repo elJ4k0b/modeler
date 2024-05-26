@@ -1,11 +1,42 @@
+import { log } from "./Log.js";
+
 class MouseEvent
 {
     constructor()
     {
-        document.addEventListener("pointerdown", (event) => this._handlePointerDown(event));
-        document.addEventListener("pointermove", (event) => this.handlePointermove(event));
-        document.addEventListener("pointerup", (event) => this.handlePointerup(event));
-        document.addEventListener("pointercancel", (event) => this.handlePointercancel(event));
+        document.addEventListener("pointerdown", (event) => {
+            try {
+                this._handlePointerDown(event);
+            }catch(error)
+            {
+                log(error, "warning");
+            }
+        });
+        document.addEventListener("pointermove", (event) => {
+            try {
+                this.handlePointermove(event);
+            }catch(error)
+            {
+                log(error, "warning")
+            }
+
+        });
+        document.addEventListener("pointerup", (event) => {
+            try {
+                this.handlePointerup(event);
+            }catch(error)
+            {
+                log(error, "warning");
+            }
+        });
+        document.addEventListener("pointercancel", (event) => {
+            try {
+                this.handlePointercancel(event)
+            }catch(error)
+            {
+                log(error, "warning");
+            }
+        });
         
         this._pointers = {};
     }
@@ -105,8 +136,6 @@ class MouseEvent
         event.preventDefault();
         let pointer = {};
         this._pointers[event.pointerId] = pointer;
-        
-
         pointer.target = event.target.closest('[id*="diagram"]') || event.target;
 
         pointer.longpress = false;

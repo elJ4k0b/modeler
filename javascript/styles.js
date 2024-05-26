@@ -12,3 +12,6 @@ export const CONTAINER_FILL = "white";
 export const ELEMENT_FILL = "white";
 
 export const LINE_GAP = "40";
+
+export const ELEMENT_WIDTH = 100;
+export const ELEMENT_HEIGHT = 100;
