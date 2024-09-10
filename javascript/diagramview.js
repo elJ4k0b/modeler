@@ -101,7 +101,7 @@ class Diagramview {
     {    
         let element = this.get_tableview(id) || this.get_container(id);
         if(!element) return;
-        notify("move", {id: event.target.id, x: x, y: y});
+        notify("move", {id, x, y});
         element.move(x, y);
     }
 
