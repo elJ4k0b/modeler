@@ -1,0 +1,9 @@
+# Node-Module und Log-Dateien
+node_modules/
+npm-debug.log*
+
+# Package-Manager-Locks
+package-lock.json
+
+# TypeScript spezifische Artefakte
+*.tsbuildinfo
