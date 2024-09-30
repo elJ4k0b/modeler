@@ -295,8 +295,6 @@ export function add_relation(pId: string, pTitle: string, pTypeId: string, pStar
             
         }
         let line = new LineView(pId, pStartId, pEndId, cleanTypeId, pTitle, pBendPoints);
-        //TODO: Add relation to start and end element
-    
         diagview.add_element(line);
         draw();
     }catch(error: any)

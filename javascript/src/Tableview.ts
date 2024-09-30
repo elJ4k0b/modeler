@@ -1,4 +1,5 @@
 import ContainerView from "./containerview.js";
+import { log } from "./Log.js";
 import { DiagramElementView } from "./view.js";
 
 class Tableview extends DiagramElementView
@@ -30,7 +31,7 @@ class Tableview extends DiagramElementView
 
         this.selected = false;
         this.locked = false;
-        this.dragged = false;
+        this._dragged = false;
     }
 
     lock()
@@ -38,14 +39,30 @@ class Tableview extends DiagramElementView
         this.locked = !this.locked;
     }
 
-    public override move(left: number, top: number)
+    public override move(left: number, top: number, manual: boolean = true)
     {
+        console.log(manual);
+        log(`${this.dragged}`, "info");
+        if(!manual)
+        {
+            let deltaX = left - this.position.left;
+            let deltaY = top - this.position.top;
+            for(let rel of this.incomingRelations) rel.move({x: deltaX, y: deltaY});
+            //for(let rel of this.outgoingRelations) rel.move({x: deltaX, y: deltaY});
+        }
+        else
+        {
+            for(let rel of this.outgoingRelations) rel.resetBendpoints();
+            for(let rel of this.incomingRelations) rel.resetBendpoints();
+        }
+
         if(!this.locked)
         {
             if(this.container) this.container.update_bounds();
             this.position.top = top;
             this.position.left = left;
         }
+
     }
 }
 

@@ -1,6 +1,7 @@
 import { log } from "./Log.js";
 import { typeMap } from "./Types.js";
 import * as style from "./Styles.js";
+import { BendPoint } from "./lineview.js";
 let arrow_types = {
     "line": "line",
     "line-dashed": "line-dashed",
@@ -59,7 +60,8 @@ function _create_path(type) {
         path.setAttribute("stroke-dasharray", "4,12");
     path.setAttribute("stroke-linejoin", "round");
     path.setAttribute("stroke-linecap", "round");
-    path.setAttribute("stroke-width", "5pt");
+    path.setAttribute("stroke-width", style.RELATION_WIDTH);
+    path.setAttribute("pointer-events", "stroke");
     path.setAttribute("fill", "none");
     if (type.includes("-arrowed"))
         path.setAttribute("marker-end", "url(#arrowhead)");
@@ -87,8 +89,10 @@ export function drawline_at(line, startpoint, endpoint, bendpoints = []) {
     all_points.push(endpoint);
     all_points[0] = calculateStartPosition(all_points);
     all_points[all_points.length - 1] = calculateEndPosition(all_points);
-    if (all_points.length == 2 && startpoint.y != endpoint.y && startpoint.x != endpoint.x)
+    if (all_points.length == 2 && startpoint.y != endpoint.y && startpoint.x != endpoint.x) {
+        line.addBendpoint(new BendPoint({ x: all_points[0].x, y: all_points[1].y }));
         all_points.splice(1, 0, { x: all_points[0].x, y: all_points[1].y });
+    }
     //chop ends of
     let current_start = all_points[0];
     let direction = { x: 0, y: 0 };
@@ -116,8 +120,42 @@ export function drawline_at(line, startpoint, endpoint, bendpoints = []) {
     path.id = line.id;
     if (line.selected)
         path.setAttribute("stroke", style.OVERLAY_COLOR);
+    let group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    group.appendChild(path);
+    if (line.selected) {
+        let toucharea = _create_path(type);
+        toucharea.setAttribute("d", pathData);
+        toucharea.setAttribute("stroke-width", "50pt");
+        toucharea.setAttribute("stroke", "transparent");
+        toucharea.classList.add("line");
+        toucharea.id = line.id;
+        group.appendChild(toucharea);
+        for (let point of bendpoints) {
+            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("cx", (point.x).toString());
+            circle.setAttribute("cy", (point.y).toString());
+            circle.setAttribute("r", style.BENDPOINT_RADIUS); // Größe des Kreises
+            circle.setAttribute("fill", style.BENDPOINT_COLOR);
+            circle.setAttribute("stroke", "white");
+            circle.setAttribute("stroke-width", style.BORDER_WIDTH);
+            const toucharea = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            toucharea.setAttribute("cx", (point.x).toString());
+            toucharea.setAttribute("cy", (point.y).toString());
+            toucharea.setAttribute("r", "20pt"); // Größe des Kreises
+            toucharea.setAttribute("fill", "transparent");
+            toucharea.setAttribute("stroke-width", style.BORDER_WIDTH);
+            toucharea.setAttribute("line-id", line.id);
+            toucharea.classList.add("bendpoint");
+            toucharea.style.pointerEvents = "all";
+            toucharea.id = point.id;
+            group.appendChild(circle);
+            group.appendChild(toucharea);
+        }
+    }
     path.setAttribute("d", pathData);
-    svg.appendChild(path);
+    svg.appendChild(group);
+    // path.classList.add("line");
+    // svg.appendChild(path);
     svg.innerHTML += "";
     return path;
 }
@@ -137,6 +175,8 @@ function calculateEndPosition(all_points) {
     }
     //SONDERFALL: gleiche x-koordinate
     else if (Math.abs(deltaX) <= style.ELEMENT_WIDTH / 2) {
+        log("Endpoint special case", "error");
+        console.error("special case");
         end_point.x = end_point.x + style.ELEMENT_WIDTH / 2;
         if (deltaY < 0) {
             end_point.y = end_point.y;
@@ -154,8 +194,9 @@ function calculateEndPosition(all_points) {
 function calculatePositions(point1, point2) {
     let start_point = point1;
     let second_point = point2;
-    if (!second_point || !start_point)
-        console.error("Hallo");
+    if (!second_point || !start_point) {
+        log("Cant calculate line positions for empty start or empty endpoint", "error", { file: "lines.ts", line: 261, method: "calculatePositions" });
+    }
     let deltaX = start_point.x - second_point.x;
     let deltaY = start_point.y - second_point.y;
     if (Math.abs(deltaY) <= style.ELEMENT_HEIGHT / 2) {

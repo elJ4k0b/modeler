@@ -1,4 +1,5 @@
 import ContainerView from "./containerview.js";
+import LineView from "./lineview.js";
 
 export abstract class View
 {
@@ -16,8 +17,30 @@ export abstract class View
 
 export abstract class DiagramElementView  extends View
 {
-    public dragged: boolean = false;
+    protected _dragged: boolean = false;
+    protected incomingRelations: Array<LineView> = [];
+    protected outgoingRelations: Array<LineView> = [];
 
     constructor(){super()}
-    public abstract move (x: number, y: number): void;
+
+    public get dragged(): boolean {return this._dragged};
+    public set dragged(dragging: boolean) {this._dragged = dragging};
+
+    public addRelation(relation: LineView, direction: "incoming" | "outgoing")
+    {
+        let array = direction == "incoming" ? this.incomingRelations : this.outgoingRelations;
+        array.push(relation)
+    }
+
+    public removeRelation(relation: LineView)
+    {
+        let outgoingRelIndex = this.outgoingRelations.findIndex(line => relation.id == line.id)
+        if(outgoingRelIndex)
+            this.outgoingRelations.splice(outgoingRelIndex, 1);
+        let incomingRelIndex = this.outgoingRelations.findIndex(line => relation.id == line.id)
+        if(incomingRelIndex)
+            this.incomingRelations.splice(incomingRelIndex, 1);
+    }
+
+    public abstract move (x: number, y: number, manual?: boolean): void;
 }

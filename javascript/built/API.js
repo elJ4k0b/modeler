@@ -245,7 +245,6 @@ export function add_relation(pId, pTitle, pTypeId, pStartId, pEndId, pBendPoints
             bendPoint.y = grid_to_poscenter(bendPoint.y);
         }
         let line = new LineView(pId, pStartId, pEndId, cleanTypeId, pTitle, pBendPoints);
-        //TODO: Add relation to start and end element
         diagview.add_element(line);
         draw();
     }

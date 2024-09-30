@@ -99,9 +99,29 @@ class Diagramview {
                     this.containers.set(element.id, containerview);
                     break;
                 case LineView:
+                    if(!(element instanceof LineView))
+                        throw new Error("Constructor and instanceof are inconsistent.")
+
                     //TODO: Add containerviews as connection targets und sources
                     const lineview = element as LineView;
                     this.lineviews.set(element.id, lineview);
+
+                    try {
+                        let startElement = this.elements.get(element.startId);
+                        if(startElement && startElement instanceof DiagramElementView) 
+                            startElement.addRelation(element, "outgoing");
+                        else
+                            log(`StartElement of relation with id ${element.id} is empty or invalid`, "warning");
+
+                        let endElement = this.elements.get(element.endId);
+                        if(endElement && endElement instanceof DiagramElementView) 
+                            endElement.addRelation(element, "incoming");
+                        else
+                            log(`EndElement of Relation with id ${element.id} is empty or invalid`, "warning");
+                    }  
+                    catch(error) {
+                        log(`Failed to update incoming and outgoing relations on elements - Data might be inconsistent`, "error");
+                    }
 
                     try {
                         let startpoint = this.get_tableview(lineview.startId)?.position;
@@ -151,12 +171,33 @@ class Diagramview {
             switch(element.constructor)
             {
                 case ContainerView:
+                    if(!(element instanceof ContainerView))
+                        throw new Error("Constructor and instanceof are inconsistent.")
+
                     this.containers.delete(id);
                     break;
                 case LineView:
+                    if(!(element instanceof LineView))
+                        throw new Error("Constructor and instanceof are inconsistent.")
+                    
+                    let startElement = this.elements.get(element.startId);
+                    if(startElement && startElement instanceof DiagramElementView) 
+                        startElement.removeRelation(element);
+                    else
+                        log(`StartElement of relation with id ${element.id} is empty or invalid`, "warning");
+
+                    let endElement = this.elements.get(element.endId);
+                    if(endElement && endElement instanceof DiagramElementView) 
+                        endElement.removeRelation(element);
+                    else
+                        log(`EndElement of Relation with id ${element.id} is empty or invalid`, "warning");
+
                     this.lineviews.delete(id);
                     break;
                 case Tableview:
+                    if(!(element instanceof Tableview))
+                        throw new Error("Constructor and instanceof are inconsistent.")
+
                     this.tableviews.delete(id);
                     if(element == this.startElement)
                     {
@@ -247,7 +288,7 @@ class Diagramview {
         }
         catch(error)
         {
-            log("Failed to remove element from conatiner - Element does either not exist or has no container", "error");
+            log("Failed to remove element from container - Element does either not exist or has no container", "error");
         }
 
 
@@ -268,7 +309,7 @@ class Diagramview {
         }
         catch(error)
         {
-            log("Failed to add element to conatiner - Element does either not exist or can not be added to container " + error, "error");
+            log("Failed to add element to container - Element does either not exist or can not be added to container " + error, "error");
         }
     }
 

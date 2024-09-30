@@ -26,7 +26,7 @@ class ContainerView extends DiagramElementView {
         this.title = pTitle;
         this.typeId = pType;
         this.selected = false;
-        this.dragged = false;
+        this._dragged = false;
         this.highlighted = false;
     }
     add(tblview) {
@@ -52,8 +52,8 @@ class ContainerView extends DiagramElementView {
         if (!all)
             return;
         for (let child of this.children.values()) {
-            child.dragged = this.dragged;
-            child.move(child.position.left + deltaX, child.position.top + deltaY);
+            child.dragged = this._dragged;
+            child.move(child.position.left + deltaX, child.position.top + deltaY, false);
         }
     }
     //This could cause performance issues

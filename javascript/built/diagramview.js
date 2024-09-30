@@ -3,6 +3,7 @@ import ContainerView from "./containerview.js";
 import LineView from "./lineview.js";
 import { notify } from "./API.js";
 import { log } from "./Log.js";
+import { DiagramElementView } from "./view.js";
 class Diagramview {
     constructor() {
         this.selected_elements = new Map();
@@ -76,9 +77,26 @@ class Diagramview {
                     this.containers.set(element.id, containerview);
                     break;
                 case LineView:
+                    if (!(element instanceof LineView))
+                        throw new Error("Constructor and instanceof are inconsistent.");
                     //TODO: Add containerviews as connection targets und sources
                     const lineview = element;
                     this.lineviews.set(element.id, lineview);
+                    try {
+                        let startElement = this.elements.get(element.startId);
+                        if (startElement && startElement instanceof DiagramElementView)
+                            startElement.addRelation(element, "outgoing");
+                        else
+                            log(`StartElement of relation with id ${element.id} is empty or invalid`, "warning");
+                        let endElement = this.elements.get(element.endId);
+                        if (endElement && endElement instanceof DiagramElementView)
+                            endElement.addRelation(element, "incoming");
+                        else
+                            log(`EndElement of Relation with id ${element.id} is empty or invalid`, "warning");
+                    }
+                    catch (error) {
+                        log(`Failed to update incoming and outgoing relations on elements - Data might be inconsistent`, "error");
+                    }
                     try {
                         let startpoint = (_a = this.get_tableview(lineview.startId)) === null || _a === void 0 ? void 0 : _a.position;
                         let endpoint = (_b = this.get_tableview(lineview.endId)) === null || _b === void 0 ? void 0 : _b.position;
@@ -121,12 +139,28 @@ class Diagramview {
             this.elements.delete(id);
             switch (element.constructor) {
                 case ContainerView:
+                    if (!(element instanceof ContainerView))
+                        throw new Error("Constructor and instanceof are inconsistent.");
                     this.containers.delete(id);
                     break;
                 case LineView:
+                    if (!(element instanceof LineView))
+                        throw new Error("Constructor and instanceof are inconsistent.");
+                    let startElement = this.elements.get(element.startId);
+                    if (startElement && startElement instanceof DiagramElementView)
+                        startElement.removeRelation(element);
+                    else
+                        log(`StartElement of relation with id ${element.id} is empty or invalid`, "warning");
+                    let endElement = this.elements.get(element.endId);
+                    if (endElement && endElement instanceof DiagramElementView)
+                        endElement.removeRelation(element);
+                    else
+                        log(`EndElement of Relation with id ${element.id} is empty or invalid`, "warning");
                     this.lineviews.delete(id);
                     break;
                 case Tableview:
+                    if (!(element instanceof Tableview))
+                        throw new Error("Constructor and instanceof are inconsistent.");
                     this.tableviews.delete(id);
                     if (element == this.startElement) {
                         notify("start-deselect", element.id);
@@ -199,7 +233,7 @@ class Diagramview {
             notify("container-remove", { elementId: elementId, containerId: currentContainer.id });
         }
         catch (error) {
-            log("Failed to remove element from conatiner - Element does either not exist or has no container", "error");
+            log("Failed to remove element from container - Element does either not exist or has no container", "error");
         }
     }
     addToContainer(elementId, containerId) {
@@ -215,7 +249,7 @@ class Diagramview {
             notify("container-add", { elementId, containerId });
         }
         catch (error) {
-            log("Failed to add element to conatiner - Element does either not exist or can not be added to container " + error, "error");
+            log("Failed to add element to container - Element does either not exist or can not be added to container " + error, "error");
         }
     }
     get_selected_elements() {
