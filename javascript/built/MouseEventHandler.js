@@ -6,6 +6,7 @@ import { select } from "./select.js";
 import { startpinch, pinch } from "./pinchzoom.js";
 import draw from "./draw.js";
 import { diagview } from "./diagramview.js";
+import { bend, endbend, startbend } from "./bend.js";
 const TOOLS = {
     select: "select",
     scale: "scale",
@@ -20,6 +21,7 @@ var Tools;
     Tools[Tools["drag"] = 2] = "drag";
     Tools[Tools["scroll"] = 3] = "scroll";
     Tools[Tools["zoom"] = 4] = "zoom";
+    Tools[Tools["bend"] = 5] = "bend";
 })(Tools || (Tools = {}));
 let selected_tool = Tools.drag;
 function switch_tool(tool) {
@@ -50,7 +52,7 @@ class CustomEvents extends MouseEvent {
         this.scrolling = false;
     }
     handleClick(event) {
-        if (selected_tool == Tools.drag)
+        if (selected_tool == Tools.drag || selected_tool == Tools.bend)
             select(event);
     }
     handleLongPress(event, pointer) {
@@ -83,6 +85,12 @@ class CustomEvents extends MouseEvent {
             }
             return;
         }
+        else if ((target.classList.contains("line") && diagview.is_selected(target.id)) || target.classList.contains("bendpoint")) {
+            console.log(target.classList);
+            switch_tool(Tools.bend);
+            startbend(event, pointer);
+            return;
+        }
         else if (target.id == "viewport") {
             switch_tool(Tools.scroll);
             zoomHandler.start_pan(event);
@@ -107,6 +115,9 @@ class CustomEvents extends MouseEvent {
             case Tools.scale:
                 scale(event);
                 break;
+            case Tools.bend:
+                bend(event, pointer);
+                break;
             case Tools.scroll:
                 zoomHandler.pan(event);
                 break;
@@ -124,11 +135,14 @@ class CustomEvents extends MouseEvent {
                 break;
         }
     }
-    handleDragEnd(event) {
+    handleDragEnd(event, pointer) {
         switch (selected_tool) {
             case Tools.drag:
                 enddrag(event);
                 this.checkDropTargets(event);
+                break;
+            case Tools.bend:
+                endbend(event, pointer);
                 break;
             case Tools.scale:
                 endscale(event);

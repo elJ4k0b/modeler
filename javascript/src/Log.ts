@@ -46,17 +46,17 @@ function log_development(type: LogTypes, message: string, detail?: LogDetail)
     if(type == "error")
     {
         console.error(message);
-        displayLog(message, detail);  
+        displayLog(message, type, detail);  
     } 
     else if(type == "warning")
     {
         console.warn(message);
-        displayLog(message, detail);
+        displayLog(message, type, detail);
     }
     else console.log(message);
 }
 
-function displayLog(message: string, detail?: LogDetail)
+function displayLog(message: string, type: LogTypes, detail?: LogDetail)
 {
     let container = document.getElementById("errorContainer");
 
@@ -64,7 +64,18 @@ function displayLog(message: string, detail?: LogDetail)
     {
         container = document.createElement("div");
         container.id = "errorContainer";
-        container.style.backgroundColor = "#E64437";
+        switch(type)
+        {
+            case "error":
+                container.style.backgroundColor = "#E64437";
+                break;
+            case "warning":
+                container.style.backgroundColor = "#E6CB5E";
+                break;
+            case "info":
+                container.style.backgroundColor = "#64AAE3";
+                break;
+        }
         container.style.color = "white";
         container.style.fontFamily = "sans-serif";
         container.style.position = "absolute";

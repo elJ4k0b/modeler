@@ -1,4 +1,5 @@
 import { log } from "./Log.js";
+import zoomHandler from "./main.js";
 class MouseEvent {
     constructor() {
         document.addEventListener("pointerdown", (event) => {
@@ -45,6 +46,8 @@ class MouseEvent {
         let pointer = this._pointers[event.pointerId];
         if (!pointer)
             return;
+        pointer.worldPos.x = event.clientX - zoomHandler.viewportCenter.x / zoomHandler.zoomFactor;
+        pointer.worldPos.y = event.clientY - zoomHandler.viewportCenter.y / zoomHandler.zoomFactor;
         let movementDelta = { x: 0, y: 0 };
         movementDelta.x = pointer.origin.x - event.clientX;
         movementDelta.y = pointer.origin.y - event.clientY;
@@ -96,8 +99,11 @@ class MouseEvent {
             originalEvent: event,
             longclickTimeout: 0,
             drag: false,
-            dropTargets: []
+            dropTargets: [],
+            worldPos: { x: 0, y: 0 },
         };
+        pointer.worldPos.x = event.clientX - zoomHandler.viewportCenter.x / zoomHandler.zoomFactor;
+        pointer.worldPos.y = event.clientY - zoomHandler.viewportCenter.y / zoomHandler.zoomFactor;
         this._pointers[event.pointerId] = pointer;
         pointer.target.setPointerCapture(event.pointerId);
         pointer.longclickTimeout = setTimeout(() => this._handleLongPress(event, pointer), 500);

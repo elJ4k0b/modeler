@@ -6,6 +6,7 @@ import { select } from "./select.js";
 import { startpinch, pinch} from "./pinchzoom.js";
 import draw from "./draw.js";
 import { diagview } from "./diagramview.js";
+import { bend, endbend, startbend } from "./bend.js";
 
 
 
@@ -23,6 +24,7 @@ enum Tools {
     drag,
     scroll,
     zoom,
+    bend,
 }
 
 let selected_tool: Tools = Tools.drag;
@@ -63,7 +65,7 @@ class CustomEvents extends MouseEvent
 
     override handleClick(event: PointerEvent)
     {
-        if(selected_tool == Tools.drag)  select(event);
+        if(selected_tool == Tools.drag || selected_tool == Tools.bend)  select(event);
     }
     override  handleLongPress(event: PointerEvent, pointer: CustomPointer)
     {
@@ -103,6 +105,13 @@ class CustomEvents extends MouseEvent
             }
             return;
         }
+        else if((target.classList.contains("line") && diagview.is_selected(target.id)) || target.classList.contains("bendpoint"))
+        {
+            console.log(target.classList);
+            switch_tool(Tools.bend);
+            startbend(event, pointer);
+            return;
+        }
         else if(target.id == "viewport")
         {
             switch_tool(Tools.scroll);
@@ -134,6 +143,9 @@ class CustomEvents extends MouseEvent
             case Tools.scale:
                 scale(event);
                 break;
+            case Tools.bend:
+                bend(event, pointer);
+                break;
             case Tools.scroll:
                 zoomHandler.pan(event);
                 break;
@@ -154,13 +166,16 @@ class CustomEvents extends MouseEvent
         
     }
 
-    override handleDragEnd(event: PointerEvent)
+    override handleDragEnd(event: PointerEvent, pointer: CustomPointer)
     {
         switch(selected_tool)
         {
             case Tools.drag:
                 enddrag(event);
                 this.checkDropTargets(event);
+                break;
+            case Tools.bend:
+                endbend(event, pointer);
                 break;
             case Tools.scale:
                 endscale(event);

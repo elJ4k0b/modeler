@@ -1,4 +1,5 @@
 import { log } from "./Log.js";
+import zoomHandler from "./main.js";
 
 export type CustomPointer = {
     target: Element, 
@@ -7,7 +8,8 @@ export type CustomPointer = {
     originalEvent: PointerEvent,
     longclickTimeout: number,
     drag: boolean,
-    dropTargets: Array<Element>
+    dropTargets: Array<Element>,
+    worldPos: {x: number, y: number},
 }
 
 type Point = {x: number, y: number}
@@ -68,6 +70,9 @@ class MouseEvent
         let pointer = this._pointers[event.pointerId];
         
         if(!pointer) return;
+
+        pointer.worldPos.x = event.clientX -zoomHandler.viewportCenter.x /zoomHandler.zoomFactor 
+        pointer.worldPos.y = event.clientY -zoomHandler.viewportCenter.y /zoomHandler.zoomFactor
         
         let movementDelta: Point = {x: 0, y: 0};
         movementDelta.x = pointer.origin.x - event.clientX;
@@ -142,8 +147,12 @@ class MouseEvent
             originalEvent: event,
             longclickTimeout: 0,
             drag: false,
-            dropTargets: []
+            dropTargets: [],
+            worldPos: {x: 0, y: 0},
         };
+        
+        pointer.worldPos.x = event.clientX -zoomHandler.viewportCenter.x /zoomHandler.zoomFactor 
+        pointer.worldPos.y = event.clientY -zoomHandler.viewportCenter.y /zoomHandler.zoomFactor
 
         this._pointers[event.pointerId] = pointer;
         pointer.target.setPointerCapture(event.pointerId);
