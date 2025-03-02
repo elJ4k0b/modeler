@@ -1,4 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+
+@font-face {
+    font-family: Bebas Neue;
+    src: url(../ressources/BebasNeue-Regular.ttf);
+  }
 :root{
     --card-color: white;
     --text-color: #343A40;
