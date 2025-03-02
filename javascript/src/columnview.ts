@@ -1,6 +1,9 @@
 import ContainerView from "./containerview.js";
 import { View } from "./view.js";
 
+
+// INFO: This class is not used
+
 class ColumnView extends View
 {
     public override id: string;

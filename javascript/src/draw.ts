@@ -1,5 +1,5 @@
 import { diagview } from "./diagramview.js";
-import { create_start_marker, drawline_at } from "./lines.js";
+import { create_start_marker, drawline_at } from "./lines/lines.js";
 import { grid_size, size } from "./grid.js";
 import zoomHandler from "./main.js";
 import * as style from "./Styles.js"
@@ -481,8 +481,8 @@ function draw_lines()
         labelContainer.appendChild(label);
 
         try {
-            let start = diagview.get_tableview(line.startId);
-            let end = diagview.get_tableview(line.endId);
+            let start = diagview.get_element(line.startId);
+            let end = diagview.get_element(line.endId);
     
             if(start == undefined ||end == undefined) 
                 throw new Error(`The start or end values of line with id ${line.id} are undefined`);

@@ -8,7 +8,7 @@ type LogTypes = "warning" | "error" | "info"
 type LogDetail = {
     file: string,
     method: string, 
-    line: number,
+    line?: number,
 }
 
 const DEFAULT_ENVIRONMENT = Environments.Developement;

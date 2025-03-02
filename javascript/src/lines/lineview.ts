@@ -1,5 +1,8 @@
-import ContainerView from "./containerview.js";
-import { View } from "./view.js";
+import ContainerView from "../containerview.js";
+import { diagview } from "../diagramview.js";
+import { log } from "../Log.js";
+import Tableview from "../Tableview.js";
+import { View } from "../view.js";
 
 type Point = {x: number, y: number};
 
@@ -39,6 +42,7 @@ class LineView extends View
 
         this.startId = pStartId; 
         this.endId = pEndId;
+
         this._bendpoints = new Map();
         for(let point of pBendPoints)
         {
@@ -47,8 +51,26 @@ class LineView extends View
         }
     }
 
-    public get bendpoints(): Array<BendPoint> {return Array.from(this._bendpoints.values())};
-    public set bendpoints(points: Array<Point>){this.update(points)};
+    public get bendpoints(): Array<BendPoint>
+    {
+        let bendpointArray = Array.from(this._bendpoints.values());
+        let origin = {
+            x: this.originElement.position.left,
+            y: this.originElement.position.top,
+        }
+        return bendpointArray.sort((a,b) => _distance(origin, a) - _distance(origin, b));
+    }
+
+    public set bendpoints(points: Array<Point>)
+    {
+        this.update(points)
+        this._bendpoints = new Map();
+        for(let point of points)
+        {
+            let bendpoint = new BendPoint(point);
+            this._bendpoints.set(bendpoint.id, bendpoint);
+        }
+    };
 
     public getBendpoint(id: string): BendPoint
     {
@@ -74,7 +96,7 @@ class LineView extends View
         this._bendpoints = new Map();
     }
 
-    update(points: Array<{x: number, y: number}>)
+    public update(points: Array<{x: number, y: number}>)
     {
         let first = points[0];
         let last = points[1];
@@ -85,6 +107,36 @@ class LineView extends View
         this.dimension.width = Math.abs(first.x - last.x);
         this.dimension.height = Math.abs(first.y - last.y);
     }
+
+    public get originElement()
+    {
+        let originElement = diagview.get_element(this.endId);
+        if(!originElement)
+        {
+            log(`OriginElement of line with id ${this.id} does not exist`, "error", {file: "lineview.ts", method: "targetElement"});
+            return new Tableview("", "", "", 0, 0 ,0, 0, null);
+        }
+        return originElement
+    }
+
+    public get targetElement()
+    {
+        let targetElement = diagview.get_element(this.endId);
+        if(!targetElement)
+        {
+            log(`TargetElement of line with id ${this.id} does not exist`, "error", {file: "lineview.ts", method: "targetElement"});
+            return new Tableview("", "", "", 0, 0 ,0, 0, null);
+        }
+        return targetElement
+    }
+}
+
+function _distance(point1: Point, point2: Point)
+{
+    let distance:Point = {x: 0, y: 0};
+    distance.x = Math.abs(point1.x - point2.x);
+    distance.y = Math.abs(point1.y - point2.y);
+    return Math.sqrt(Math.pow(distance.x, 2) + Math.pow(distance.y, 2));
 }
 
 export default LineView;

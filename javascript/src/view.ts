@@ -1,5 +1,5 @@
 import ContainerView from "./containerview.js";
-import LineView from "./lineview.js";
+import LineView from "./lines/lineview.js";
 
 export abstract class View
 {

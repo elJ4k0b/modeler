@@ -77,7 +77,7 @@ class ContainerView extends DiagramElementView
     }
 
 
-    //This could cause performance issues
+    //WARNING: This could cause performance issues
     update_bounds()
     {
         let children = Array.from(this.children.values());
@@ -141,7 +141,7 @@ class ContainerView extends DiagramElementView
     }
 
 
-    //diese funktion passt besser in diagramview 
+    //INFO: diese funktion passt besser in diagramview 
     set_position_and_size(x: number, y: number, width: number, height: number)
     {
         x = Math.min(this.max.x, x);

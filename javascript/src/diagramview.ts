@@ -1,6 +1,6 @@
 import Tableview from "./Tableview.js";
 import ContainerView from "./containerview.js";
-import LineView from "./lineview.js";
+import LineView from "./lines/lineview.js";
 import { notify } from "./API.js";
 import { log } from "./Log.js";
 import { DiagramElementView, View } from "./view.js";
@@ -124,15 +124,15 @@ class Diagramview {
                     }
 
                     try {
-                        let startpoint = this.get_tableview(lineview.startId)?.position;
-                        let endpoint = this.get_tableview(lineview.endId)?.position;
+                        let startpoint = this.get_element(lineview.startId)?.position;
+                        let endpoint = this.get_element(lineview.endId)?.position;
     
                         if(!startpoint || !endpoint) throw new Error("Start and or endpoint are not defined");
                         let points = [{x: startpoint.left, y: startpoint.top}, {x: endpoint.left, y: endpoint.top}]
                         lineview.update(points);
                         break;
                     } catch (error) {
-                        log(`Failed to update line with id ${lineview.id}`, "error")
+                        log(`Failed to update line with id ${lineview.id}`, "error", {file: "diagramview.ts", line: 135, method: "add_element"});
                     }
                 case Tableview:
                     const tableview = element as Tableview

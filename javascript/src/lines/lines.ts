@@ -1,6 +1,6 @@
-import { log } from "./Log.js";
-import { typeMap } from "./Types.js";
-import * as style from "./Styles.js"
+import { log } from "../Log.js";
+import { typeMap } from "../Types.js";
+import * as style from "../Styles.js"
 import LineView, { BendPoint } from "./lineview.js";
 
 let arrow_types: {[index: string]: ArrowType} = {
@@ -8,9 +8,10 @@ let arrow_types: {[index: string]: ArrowType} = {
     "line-dashed": "line-dashed",
     "line-arrowed": "line-arrowed",
     "line-dashed-arrowed": "line-dashed-arrowed",
+    "line-dropped-arrowed": "line-dropped-arrowed",
 }
 
-export type ArrowType = "line" | "line-dashed" | "line-arrowed" | "line-dashed-arrowed"; 
+export type ArrowType = "line" | "line-dashed" | "line-arrowed" | "line-dashed-arrowed" | "line-dropped-arrowed"; 
 
 type Point = {x: number, y: number};
 
@@ -61,8 +62,8 @@ function _create_marker()
     const arrowheadPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
     arrowheadPath.setAttribute("stroke-linejoin","round")
     arrowheadPath.setAttribute("stroke-linecap","round")
-    arrowheadPath.setAttribute("stroke", style.RELATION_COLOR);
-    arrowheadPath.setAttribute("fill", "none");
+    arrowheadPath.setAttribute("stroke", "context-stroke");
+    arrowheadPath.setAttribute("fill", "context-fill");
     arrowheadPath.setAttribute("stroke-width", style.MARKER_WIDTH);
     arrowheadPath.setAttribute("d", "M 0 0 L 5 5 L 0 10");
         
@@ -106,14 +107,18 @@ export function drawline_at(line: LineView, startpoint: Point, endpoint: Point, 
     let has_marker = document.querySelector("#arrowhead") != null;
     if (!has_marker)svg.appendChild(_create_marker());
 
+    let lineType = typeMap.get(line.typeId);
+    let type = lineType? arrow_types[lineType.lineStyle]: "line";
+    let path = _create_path(type);
+
     let all_points = [];
-    bendpoints.sort((a,b) => _distance(startpoint, a) - _distance(startpoint, b));
+    bendpoints.sort((a,b) => _distance(endpoint, b) - _distance(endpoint, a));
     all_points.push(startpoint);
     all_points.push(...bendpoints);
     all_points.push(endpoint);
     
     all_points[0] = calculateStartPosition(all_points);
-    all_points[all_points.length-1] = calculateEndPosition(all_points);
+    all_points[all_points.length-1] = calculateEndPosition(all_points, type == "line-dropped-arrowed");
     if(all_points.length == 2 && startpoint.y != endpoint.y && startpoint.x != endpoint.x)
     {
         line.addBendpoint(new BendPoint({x:all_points[0].x, y: all_points[1].y}));
@@ -140,6 +145,7 @@ export function drawline_at(line: LineView, startpoint: Point, endpoint: Point, 
     new_end.y = all_points[all_points.length-2].y + direction.y - Math.sign(direction.y) * parseFloat(style.LINE_GAP);
     all_points[all_points.length-1] = new_end;
 
+    
     line.update(all_points);
     
     let pathData = `M ${all_points[0].x} ${all_points[0].y}`;
@@ -148,10 +154,6 @@ export function drawline_at(line: LineView, startpoint: Point, endpoint: Point, 
     {
         pathData += `L ${all_points[i].x} ${all_points[i].y}`
     }
-    let lineType = typeMap.get(line.typeId);
-
-    let type = lineType? arrow_types[lineType.lineStyle]: "line";
-    let path = _create_path(type);
 
     path.id = line.id;
     if(line.selected) path.setAttribute("stroke", style.OVERLAY_COLOR);
@@ -168,6 +170,7 @@ export function drawline_at(line: LineView, startpoint: Point, endpoint: Point, 
         toucharea.setAttribute("stroke", "transparent");
         toucharea.classList.add("line");
         toucharea.id = line.id;
+        toucharea.addEventListener("click", () => console.warn("toucharea"));
         group.appendChild(toucharea);
         
         for(let point of bendpoints)
@@ -188,6 +191,7 @@ export function drawline_at(line: LineView, startpoint: Point, endpoint: Point, 
             toucharea.setAttribute("stroke-width", style.BORDER_WIDTH);
             toucharea.setAttribute("line-id", line.id);
             toucharea.classList.add("bendpoint");
+            toucharea.classList.add("toucharea");
             toucharea.style.pointerEvents = "all"
             toucharea.id = point.id;
 
@@ -207,14 +211,15 @@ export function drawline_at(line: LineView, startpoint: Point, endpoint: Point, 
     return path;
 }
 
+
+
+
 function calculateStartPosition(all_points: Array<Point>)
 {
-    
     return calculatePositions(all_points[0], all_points[1]);
-
 }
 
-function calculateEndPosition(all_points: Array<Point>)
+function calculateEndPosition(all_points: Array<Point>, dropped: boolean)
 {
     let endIndex = all_points.length-1;
     let before_point = all_points[endIndex-1];
@@ -224,13 +229,8 @@ function calculateEndPosition(all_points: Array<Point>)
     let deltaY = before_point.y - end_point.y;
 
     //Pfeil kommt immer links oder rechts an 
-    if(deltaX < 0)
-    {
-        end_point.x = end_point.x;
-        end_point.y =  end_point.y + style.ELEMENT_HEIGHT/2;    
-    }
-    //SONDERFALL: gleiche x-koordinate
-    else if (Math.abs(deltaX) <= style.ELEMENT_WIDTH/2) 
+    //SONDERFALL: gleiche x-koordinate ODER line-type ist dropped
+    if (Math.abs(deltaX) <= style.ELEMENT_WIDTH/2) 
     {
         log("Endpoint special case", "error");
         console.error("special case");
@@ -243,8 +243,13 @@ function calculateEndPosition(all_points: Array<Point>)
         {
             end_point.y = end_point.y + style.ELEMENT_HEIGHT;
         }
-        
+            
     }   
+    else if(deltaX < 0)
+    {
+        end_point.x = end_point.x;
+        end_point.y =  end_point.y + style.ELEMENT_HEIGHT/2;    
+    }
     else 
     {
         end_point.x = end_point.x  + style.ELEMENT_WIDTH;

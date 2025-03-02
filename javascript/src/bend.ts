@@ -1,7 +1,7 @@
 import { diagview } from "./diagramview.js";
 import draw from "./draw.js";
 import { attach_to_grid, grid_size } from "./grid.js";
-import { BendPoint } from "./lineview.js";
+import { BendPoint } from "./lines/lineview.js";
 import { log } from "./Log.js";
 import zoomHandler from "./main.js";
 import { CustomPointer } from "./MouseEvent.js";
@@ -32,7 +32,7 @@ export function startbend(event: PointerEvent, pointer: CustomPointer)
     {
         log(`${error}`, "error");
     }
-    console.log(event.target);
+
     try
     {
         if(!(event.target instanceof SVGPathElement))
@@ -56,8 +56,7 @@ export function bend(event: PointerEvent, pointer: CustomPointer)
 {
     event.preventDefault();
     event.stopPropagation();
-    console.log("bending");
-    console.log(pointer.worldPos);
+    
     try
     {
         if(!currentBendpoint)
