@@ -1,7 +1,7 @@
 import { diagview } from "./diagramview.js";
 import draw from "./draw.js";
 import { attach_to_grid } from "./grid.js";
-import { BendPoint } from "./lineview.js";
+import { BendPoint } from "./lines/lineview.js";
 import { log } from "./Log.js";
 import zoomHandler from "./main.js";
 import { ELEMENT_HEIGHT } from "./Styles.js";
@@ -24,7 +24,6 @@ export function startbend(event, pointer) {
     catch (error) {
         log(`${error}`, "error");
     }
-    console.log(event.target);
     try {
         if (!(event.target instanceof SVGPathElement))
             throw new Error(`Can only bend SVGPath elements. Bending prevented`);
@@ -41,8 +40,6 @@ export function startbend(event, pointer) {
 export function bend(event, pointer) {
     event.preventDefault();
     event.stopPropagation();
-    console.log("bending");
-    console.log(pointer.worldPos);
     try {
         if (!currentBendpoint)
             throw new Error("Current BendPoint is empty. Startbend must be called before bend to prevent this.");

@@ -3,7 +3,7 @@ import { scroll_to_selection, select_view } from "./select.js";
 import { diagview } from "./diagramview.js";
 import { grid_to_pos, size, grid_size, pos_to_grid, grid_to_poscenter} from "./grid.js";
 import Tableview from "./Tableview.js";
-import LineView from "./lineview.js";
+import LineView from "./lines/lineview.js";
 import ContainerView from "./containerview.js";
 import zoomHandler from "./main.js";
 import { Type, typeMap} from "./Types.js";

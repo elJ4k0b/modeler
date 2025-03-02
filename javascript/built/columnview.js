@@ -1,4 +1,5 @@
 import { View } from "./view.js";
+// INFO: This class is not used
 class ColumnView extends View {
     constructor(pId, pX, pY, pTitle, pType) {
         super();

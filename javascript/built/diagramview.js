@@ -1,6 +1,6 @@
 import Tableview from "./Tableview.js";
 import ContainerView from "./containerview.js";
-import LineView from "./lineview.js";
+import LineView from "./lines/lineview.js";
 import { notify } from "./API.js";
 import { log } from "./Log.js";
 import { DiagramElementView } from "./view.js";
@@ -98,8 +98,8 @@ class Diagramview {
                         log(`Failed to update incoming and outgoing relations on elements - Data might be inconsistent`, "error");
                     }
                     try {
-                        let startpoint = (_a = this.get_tableview(lineview.startId)) === null || _a === void 0 ? void 0 : _a.position;
-                        let endpoint = (_b = this.get_tableview(lineview.endId)) === null || _b === void 0 ? void 0 : _b.position;
+                        let startpoint = (_a = this.get_element(lineview.startId)) === null || _a === void 0 ? void 0 : _a.position;
+                        let endpoint = (_b = this.get_element(lineview.endId)) === null || _b === void 0 ? void 0 : _b.position;
                         if (!startpoint || !endpoint)
                             throw new Error("Start and or endpoint are not defined");
                         let points = [{ x: startpoint.left, y: startpoint.top }, { x: endpoint.left, y: endpoint.top }];
@@ -107,7 +107,7 @@ class Diagramview {
                         break;
                     }
                     catch (error) {
-                        log(`Failed to update line with id ${lineview.id}`, "error");
+                        log(`Failed to update line with id ${lineview.id}`, "error", { file: "diagramview.ts", line: 135, method: "add_element" });
                     }
                 case Tableview:
                     const tableview = element;
