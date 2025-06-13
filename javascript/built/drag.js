@@ -36,6 +36,7 @@ export function enddrag(event) {
     xPosition = attach_to_grid(xPosition);
     diagview.move(draggedElement.id, xPosition, yPosition);
     draw();
+    draw();
     diagview.drag(draggedElement.id, false);
     draggedElement = null;
 }

@@ -86,7 +86,6 @@ class CustomEvents extends MouseEvent {
             return;
         }
         else if ((target.classList.contains("line") && diagview.is_selected(target.id)) || target.classList.contains("bendpoint")) {
-            console.log(target.classList);
             switch_tool(Tools.bend);
             startbend(event, pointer);
             return;

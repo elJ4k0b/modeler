@@ -24,7 +24,6 @@ class Tableview extends DiagramElementView {
         this.locked = !this.locked;
     }
     move(left, top, manual = true) {
-        console.log(manual);
         log(`${this.dragged}`, "info");
         if (!manual) {
             let deltaX = left - this.position.left;

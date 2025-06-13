@@ -7,14 +7,16 @@ import { typeMap } from "./Types.js";
 import { log } from "./Log.js";
 import ContainerView from "./containerview.js";
 import Tableview from "./Tableview.js";
+import { DashedLineVisual, DroppedLineVisual, LineVisual, StraightLineVisual } from "./lines/linevisual.js";
 
 let debug = true;
 
 const CANVAS_WIDTH = 100000;
 
-export function toggel_debuginfo()
+export function toggel_debuginfo(bool?: boolean)
 {
-    debug = !debug;
+    if(bool == undefined) debug = !debug;
+    else debug = bool;
 }
 
 function draw_container(container: ContainerView, div = document.createElement("div"))
@@ -467,18 +469,9 @@ function draw_lines()
     svg.setAttribute("width","100%");
     svg.setAttribute("height","100%");
     svg.innerHTML = "";
-
-    let labelContainer = document.createElementNS("http://www.w3.org/2000/svg","text");
-    labelContainer.setAttribute("dy", "-20");
     
     for(let line of diagview.lineviews.values())
     {
-        let label = document.createElementNS("http://www.w3.org/2000/svg", "textPath");
-        label.setAttribute("href", "#"+line.id);
-        label.setAttribute("text-anchor", "middle");
-        label.setAttribute("startOffset", "50%");
-        label.innerHTML = line.title;
-        labelContainer.appendChild(label);
 
         try {
             let start = diagview.get_element(line.startId);
@@ -486,7 +479,34 @@ function draw_lines()
     
             if(start == undefined ||end == undefined) 
                 throw new Error(`The start or end values of line with id ${line.id} are undefined`);
-            drawline_at(line, {x:start.position.left, y:start.position.top}, {x:end.position.left, y:end.position.top}, line.bendpoints);
+            let lineType = typeMap.get(line.typeId);
+            let lineIsArrowed = lineType?.lineStyle.includes('arrowed') || false;
+            let lineIsDashed = lineType?.lineStyle.includes('dashed') || false; 
+            let opts = {arrowed: lineIsArrowed, dashed: lineIsDashed};
+            
+            let visual; 
+            if(lineType?.lineStyle.includes("dropped"))
+                visual = new DroppedLineVisual(line, opts);
+            else if(lineType?.lineStyle.includes("straight"))
+                visual = new StraightLineVisual(line, opts);
+            else
+                visual = new LineVisual(line, opts);
+
+            svg.appendChild(visual.HTMLRepresentation);
+
+            //drawline_at(line, {x:start.position.left, y:start.position.top}, {x:end.position.left, y:end.position.top}, line.bendpoints);
+            if(line == diagview.startElement)
+            {
+                let path = document.getElementById(line.id) as SVGPathElement | null;
+                if(!path || !(path.constructor == SVGPathElement)) return;
+    
+                let pathLength = path.getTotalLength();
+                let point = path.getPointAtLength(0.5*pathLength);
+    
+                let marker = create_start_marker();
+                marker.setAttribute("transform", `matrix(2, 0, 0, 2, ${point.x-16}, ${point.y - 48})`);
+                svg.appendChild(marker);
+            }
         }
         catch(error)
         {
@@ -494,28 +514,9 @@ function draw_lines()
             continue;
         }
 
-        if(line == diagview.startElement)
-        {
-            let path = document.getElementById(line.id) as SVGPathElement | null;
-            if(!path || !(path.constructor == SVGPathElement)) return;
-
-            let pathLength = path.getTotalLength();
-            let point = path.getPointAtLength(0.5*pathLength);
-
-            let marker = create_start_marker();
-            
-            marker.setAttribute("transform", `matrix(2, 0, 0, 2, ${point.x-16}, ${point.y + 16})`);
-            svg.appendChild(marker);
-
-
-        }
-        else
-        {
-            
-        }
         
     }
-    svg.appendChild(labelContainer);
+    //svg.appendChild(labelContainer);
     svg.innerHTML += "";
 }
 

@@ -11,7 +11,7 @@ let arrow_types: {[index: string]: ArrowType} = {
     "line-dropped-arrowed": "line-dropped-arrowed",
 }
 
-export type ArrowType = "line" | "line-dashed" | "line-arrowed" | "line-dashed-arrowed" | "line-dropped-arrowed"; 
+export type ArrowType = "line" | "line-dashed" | "line-arrowed" | "line-dashed-arrowed" | "line-dropped-arrowed" | "line-straight-arrowed" | "line-straight" ; 
 
 type Point = {x: number, y: number};
 
@@ -33,7 +33,7 @@ export function create_start_marker()
     let container = document.createElementNS("http://www.w3.org/2000/svg", "g");
     container.setAttribute("width", "32");
     container.setAttribute("height", "32");
-    container.setAttribute("fill", "#1f6aff");
+    container.setAttribute("fill", style.START_MARKER_FILL);
     container.setAttribute("viewbox", "0 0 16 16");
 
     let path = document.createElementNS("http://www.w3.org/2000/svg", "path");
@@ -111,7 +111,7 @@ export function drawline_at(line: LineView, startpoint: Point, endpoint: Point, 
     let type = lineType? arrow_types[lineType.lineStyle]: "line";
     let path = _create_path(type);
 
-    let all_points = [];
+    let all_points:Point[] = [];
     bendpoints.sort((a,b) => _distance(endpoint, b) - _distance(endpoint, a));
     all_points.push(startpoint);
     all_points.push(...bendpoints);
@@ -119,10 +119,26 @@ export function drawline_at(line: LineView, startpoint: Point, endpoint: Point, 
     
     all_points[0] = calculateStartPosition(all_points);
     all_points[all_points.length-1] = calculateEndPosition(all_points, type == "line-dropped-arrowed");
-    if(all_points.length == 2 && startpoint.y != endpoint.y && startpoint.x != endpoint.x)
+    if(all_points.length == 2 && Math.abs(startpoint.y - endpoint.y) > 10 && Math.abs(startpoint.x - endpoint.x) > 10 && !type.includes('straight'))
     {
-        line.addBendpoint(new BendPoint({x:all_points[0].x, y: all_points[1].y}));
-        all_points.splice(1, 0, {x:all_points[0].x, y: all_points[1].y});
+        if(!type.includes('dropped'))
+        {
+            
+            let deltaY = Math.abs(all_points[0].y - all_points[1].y);
+            let higherPoint = all_points[0].y < all_points[1].y? all_points[0]: all_points[1];
+
+            all_points[0] = {x: startpoint.x, y: higherPoint.y}
+
+            line.addBendpoint(new BendPoint({x:all_points[0].x, y: higherPoint.y + deltaY/2}));
+            all_points.splice(1, 0, {x:all_points[0].x, y: higherPoint.y + deltaY/2});
+            line.addBendpoint(new BendPoint({x:all_points[1].x, y: higherPoint.y + deltaY/2}));
+            all_points.splice(2, 0, {x:all_points[2].x, y: higherPoint.y + deltaY/2});
+        }
+        else
+        {
+            line.addBendpoint(new BendPoint({x:all_points[0].x, y: all_points[1].y}));
+            all_points.splice(1, 0, {x:all_points[0].x, y: all_points[1].y});
+        }
     }
 
     //chop ends of
@@ -232,8 +248,6 @@ function calculateEndPosition(all_points: Array<Point>, dropped: boolean)
     //SONDERFALL: gleiche x-koordinate ODER line-type ist dropped
     if (Math.abs(deltaX) <= style.ELEMENT_WIDTH/2) 
     {
-        log("Endpoint special case", "error");
-        console.error("special case");
         end_point.x = end_point.x + style.ELEMENT_WIDTH/2;
         if(deltaY < 0)
         {

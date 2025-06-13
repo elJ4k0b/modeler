@@ -81,7 +81,6 @@ class ZoomHandler {
         }
         catch (error) {
             console.log(error);
-            console.log(matrix);
         }
     }
     _getMatrix(element) {

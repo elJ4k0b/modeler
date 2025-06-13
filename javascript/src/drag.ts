@@ -46,6 +46,7 @@ export function enddrag(event: PointerEvent)
 
     diagview.move(draggedElement.id, xPosition, yPosition);
     draw();
+    draw();
     diagview.drag(draggedElement.id, false);
     draggedElement = null;
 }

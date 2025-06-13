@@ -1,6 +1,8 @@
 import ContainerView from "./containerview.js";
 import LineView from "./lines/lineview.js";
 
+
+type Point = {x: number, y: number}
 export abstract class View
 {
     public abstract id: string;
@@ -13,6 +15,13 @@ export abstract class View
     public dimension: {width: number, height: number} = {width: 0, height: 0}
 
     constructor() {}
+
+    public get center(): Point {
+        return {
+            x: this.position.left + this.dimension.width/2,
+            y: this.position.top + this.dimension.height/2
+        };
+    }
 }
 
 export abstract class DiagramElementView  extends View
