@@ -153,8 +153,7 @@ class ContainerView extends DiagramElementView
         this.dimension.height = attach_to_grid(height);
         this.position.left = attach_to_grid(x);
         this.position.top = attach_to_grid(y);
-        notify("container-resize", {id: this.id, width:this.dimension.width, height:this.dimension.height});
-        notify("content-move", {id: this.id, x:this.position.left, y:this.position.top});
+        notify("container-resize", {id: this.id, x:this.position.left, y:this.position.top, width:this.dimension.width, height:this.dimension.height});
     }
 }
 

@@ -490,7 +490,7 @@ export function notify(type: string, args: any)
                 content_added_to_container(args.elementId, args.containerId);
                 break;
             case "container-resize":
-                container_resized(args.id, args.width/size, args.height/size);
+                container_resized(args.id, args.x, args.y, args.width/size, args.height/size);
         }
     }
     catch(error)
@@ -521,11 +521,11 @@ function content_moved(id: string, x: number, y: number)
 	B4A.CallSub('ContentMoved', true, id, x, y);
 }
 
-function container_resized(id: string, w: number, h: number)
+function container_resized(id: string, x:number, y: number, w: number, h: number)
 {
     log(`content ${id} resized to ${w}, ${h}}`, "info");
     // @ts-ignore
-	B4A.CallSub('ContainerResized', true, id, w, h);
+	B4A.CallSub('ContainerResized', true, id, x, y, w, h);
 }
 
 function content_added_to_container(id: number, containerid: number)
