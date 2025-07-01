@@ -7,7 +7,7 @@ import LineView from "./lines/lineview.js";
 import ContainerView from "./containerview.js";
 import zoomHandler from "./main.js";
 import { Type, typeMap} from "./Types.js";
-import { log } from "./Log.js";
+import { Environments, log, set_environment } from "./Log.js";
 import { DiagramElementView, View } from "./view.js";
 
 
@@ -16,6 +16,22 @@ let loading: boolean = false;
 export function enable_loading(bool: boolean)
 {
     loading = bool;
+}
+
+export function switch_environment(env: "production" | "development")
+{
+    
+    switch(env)
+    {
+        case "production":
+            set_environment(Environments.Production);
+            break;
+        case "development":
+            set_environment(Environments.Developement);
+            break;
+        default:
+            log(`Unknown environment: ${env}`, "error");
+    }
 }
 
 export function center_diagram(pID?: string)

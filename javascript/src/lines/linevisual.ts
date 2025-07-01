@@ -302,7 +302,6 @@ export class LineVisual
         path.setAttribute("fill", this.FILL);
         path.id = line.id;
         path.setAttribute("d", this._pointArrayToPathString(this.allPoints));
-        console.log(this.STROKE_DASHARRAY)
         if(dashed)
             path.setAttribute("stroke-dasharray", this.STROKE_DASHARRAY);
         if(arrowed)

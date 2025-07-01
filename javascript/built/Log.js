@@ -1,4 +1,5 @@
-var Environments;
+import draw, { toggel_debuginfo } from "./draw.js";
+export var Environments;
 (function (Environments) {
     Environments[Environments["Production"] = 0] = "Production";
     Environments[Environments["Developement"] = 1] = "Developement";
@@ -7,6 +8,18 @@ const DEFAULT_ENVIRONMENT = Environments.Developement;
 let currentEnvironment = DEFAULT_ENVIRONMENT;
 export function set_environment(pEnvironment) {
     currentEnvironment = pEnvironment;
+    toggel_debuginfo(pEnvironment == Environments.Developement);
+    if (pEnvironment == Environments.Production) {
+        let container = document.getElementById("errorContainer");
+        if (container)
+            container.style.display = "none";
+    }
+    else if (pEnvironment == Environments.Developement) {
+        let container = document.getElementById("errorContainer");
+        if (container)
+            container.style.display = "block";
+    }
+    draw();
 }
 export function log(message, type, detail) {
     switch (currentEnvironment) {
@@ -51,7 +64,8 @@ function displayLog(message, type, detail) {
                 break;
         }
         container.onclick = (event) => navigator.clipboard.writeText((container === null || container === void 0 ? void 0 : container.innerHTML) || "");
-        document.body.appendChild(container);
+        if (currentEnvironment == Environments.Developement)
+            document.body.appendChild(container);
     }
     container.innerHTML = `${message} - Occured in ${(detail === null || detail === void 0 ? void 0 : detail.file) || "not provided file"} in method ${(detail === null || detail === void 0 ? void 0 : detail.method) || "not provided method"} in line ${(detail === null || detail === void 0 ? void 0 : detail.line) || "not provided line"}`;
 }
