@@ -115,8 +115,9 @@ export function set_start(id, bool = true) {
 export function select_element(id, bool = true) {
     try {
         let element = _try_get(id);
-        if (!element)
-            return;
+        if (!element) {
+            diagview.select_multiple(Array.from(diagview.elements.keys()), bool);
+        }
         diagview.select(id, bool);
         if (!loading)
             scroll_to_selection();
