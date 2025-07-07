@@ -274,6 +274,14 @@ class Diagramview {
         element.selected = bool;
     }
 
+    select_multiple(ids: Array<string>, bool: boolean)
+    {
+        for(let id of ids)
+        {
+            this.select(id, bool);
+        }
+    }
+
     removeFromCurrentContainer(elementId: string)
     {
         try {
