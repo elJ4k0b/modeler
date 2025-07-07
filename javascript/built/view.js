@@ -18,10 +18,23 @@ export class DiagramElementView extends View {
         this._dragged = false;
         this.incomingRelations = [];
         this.outgoingRelations = [];
+        this._zIndex = 0;
     }
     get dragged() { return this._dragged; }
     ;
-    set dragged(dragging) { this._dragged = dragging; }
+    set dragged(dragging) {
+        this._dragged = dragging;
+        if (dragging)
+            this.zIndex = 1000; // Bring to front when dragged
+        else
+            this.zIndex = 0; // Reset z-index when not dragged
+    }
+    ;
+    set zIndex(z) {
+        this._zIndex = z;
+    }
+    ;
+    get zIndex() { return this._zIndex; }
     ;
     addRelation(relation, direction) {
         let array = direction == "incoming" ? this.incomingRelations : this.outgoingRelations;

@@ -17,6 +17,7 @@ class ContainerView extends DiagramElementView
     constructor(pId: string, pTitle: string, pType: string, pX: number, pY: number,  pWidth: number, pHeight: number, pContainer: ContainerView | null)
     {
         super();
+        this._zIndex = 0;
         this.id = pId;
         this.container = pContainer;
         this.position = {
@@ -42,9 +43,23 @@ class ContainerView extends DiagramElementView
         this._dragged = false;
         this.highlighted = false;
     }
+
+    public override get zIndex(): number {return this._zIndex; }
+    public override set zIndex(z: number)
+    {
+        super.zIndex = z;
+        for(let child of this.children.values())
+        {
+            child.zIndex = z + 1;
+        }
+    }
+
     add(tblview: DiagramElementView): void
     {
+        if(tblview instanceof ContainerView && tblview.children.has(this.id)) return;
+        if(tblview.id == this.id) return;
         if(this.children.has(tblview.id)) return;
+        tblview.zIndex = this._zIndex + 1;
         this.children.set(tblview.id, tblview);
         this.update_bounds();
     }
@@ -71,7 +86,7 @@ class ContainerView extends DiagramElementView
         for(let child of this.children.values())
         {   
             child.dragged = this._dragged;
-            child.move(child.position.left + deltaX, child.position.top + deltaY, false);
+            child.move(child.position.left + deltaX, child.position.top + deltaY, true);
         }
 
     }

@@ -27,7 +27,7 @@ function draw_container(container, div = document.createElement("div")) {
     div.style.width = `${container.dimension.width}px`;
     div.style.height = `${container.dimension.height}px`;
     div.style.padding = "0px";
-    div.style.zIndex = "1";
+    div.style.zIndex = container.zIndex.toString() || "1";
     if (container.dragged) {
         div.classList.remove("transition-move");
     }
@@ -89,7 +89,7 @@ function draw_element(tableview, div = document.createElement("div")) {
     div.style.width = `${tableview.dimension.width}px`; //`${grid_size(1)}px`;     
     div.style.height = `${tableview.dimension.height}px`; //`${grid_size(1)}px`;
     div.style.padding = "5px";
-    div.style.zIndex = "2";
+    div.style.zIndex = tableview.zIndex.toString() || "2";
     if (tableview.dragged) {
         div.classList.remove("transition-move");
     }

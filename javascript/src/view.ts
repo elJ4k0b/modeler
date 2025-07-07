@@ -1,4 +1,5 @@
 import ContainerView from "./containerview.js";
+import draw from "./draw.js";
 import LineView from "./lines/lineview.js";
 
 
@@ -29,11 +30,22 @@ export abstract class DiagramElementView  extends View
     protected _dragged: boolean = false;
     protected incomingRelations: Array<LineView> = [];
     protected outgoingRelations: Array<LineView> = [];
+    protected _zIndex: number = 0;
 
     constructor(){super()}
 
     public get dragged(): boolean {return this._dragged};
-    public set dragged(dragging: boolean) {this._dragged = dragging};
+    public set dragged(dragging: boolean) {
+        this._dragged = dragging
+        if(dragging)
+            this.zIndex = 1000; // Bring to front when dragged
+        else
+            this.zIndex = 0; // Reset z-index when not dragged
+    };
+    public set zIndex(z: number) {
+        this._zIndex = z
+    };
+    public get zIndex(): number {return this._zIndex};
 
     public addRelation(relation: LineView, direction: "incoming" | "outgoing")
     {

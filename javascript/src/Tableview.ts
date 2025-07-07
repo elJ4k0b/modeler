@@ -15,6 +15,7 @@ class Tableview extends DiagramElementView
     constructor(pId: string, pTitle: string, pType: string, pLeft: number, pTop: number,  pWidth: number, pHeight: number, pContainer: ContainerView | null)
     {
         super();
+        this._zIndex = 1;
         this.title = pTitle;
         this.id = pId;
         this.typeId = pType;

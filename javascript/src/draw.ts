@@ -35,7 +35,7 @@ function draw_container(container: ContainerView, div = document.createElement("
     div.style.width = `${container.dimension.width}px`;     
     div.style.height = `${container.dimension.height}px`;
     div.style.padding = "0px";
-    div.style.zIndex = "1";
+    div.style.zIndex = container.zIndex.toString() || "1";
 
     if(container.dragged)
     {
@@ -110,7 +110,7 @@ function draw_element(tableview: Tableview, div = document.createElement("div"))
     div.style.width = `${tableview.dimension.width}px`;//`${grid_size(1)}px`;     
     div.style.height = `${tableview.dimension.height}px`;//`${grid_size(1)}px`;
     div.style.padding = "5px";
-    div.style.zIndex = "2";
+    div.style.zIndex = tableview.zIndex.toString() || "2";
     
     if(tableview.dragged)
     {

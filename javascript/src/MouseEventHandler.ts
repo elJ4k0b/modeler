@@ -201,9 +201,6 @@ class CustomEvents extends MouseEvent
         let dropTargets = document.elementsFromPoint(event.clientX, event.clientY);
         let draggedElement = event.target;
 
-        let draggedElementIsContainer = diagview.get_container(draggedElement.id) != null;
-        if(draggedElementIsContainer) return;
-
         for(let target of dropTargets)
         {
             let container = diagview.get_container(target.id);

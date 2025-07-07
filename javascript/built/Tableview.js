@@ -3,6 +3,7 @@ import { DiagramElementView } from "./view.js";
 class Tableview extends DiagramElementView {
     constructor(pId, pTitle, pType, pLeft, pTop, pWidth, pHeight, pContainer) {
         super();
+        this._zIndex = 1;
         this.title = pTitle;
         this.id = pId;
         this.typeId = pType;
