@@ -118,7 +118,9 @@ export function select_element(id, bool = true) {
         if (!element) {
             diagview.select_multiple(Array.from(diagview.elements.keys()), bool);
         }
-        diagview.select(id, bool);
+        else {
+            diagview.select(id, bool);
+        }
         if (!loading)
             scroll_to_selection();
         draw();
@@ -410,7 +412,7 @@ export function notify(type, args) {
                 content_added_to_container(args.elementId, args.containerId);
                 break;
             case "container-resize":
-                container_resized(args.id, args.x, args.y, args.width / size, args.height / size);
+                container_resized(args.id, pos_to_grid(args.x), pos_to_grid(args.y), args.width / size, args.height / size);
         }
     }
     catch (error) {
@@ -433,9 +435,11 @@ function content_moved(id, x, y) {
     B4A.CallSub('ContentMoved', true, id, x, y);
 }
 function container_resized(id, x, y, w, h) {
-    log(`content ${id} resized to ${w}, ${h}}`, "info");
+    log(`content ${id} resized to ${w}, ${h}`, "info");
     // @ts-ignore
-    B4A.CallSub('ContainerResized', true, id, x, y, w, h);
+    B4A.CallSub('ContainerResized', true, id, `${x}, ${y}, ${w}, ${h}`);
+    //@ts-ignore
+    //B4A.CallSub('ContainerResized', true, id, x, y, w, h);
 }
 function content_added_to_container(id, containerid) {
     log(`content ${id} added to container ${containerid}`, "info");
