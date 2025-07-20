@@ -100,6 +100,11 @@ export class LineVisual
                 this.HTMLRepresentation.appendChild(bendpointToucharea)
             }
         }
+        else {
+            let pathTouchArea = this._createToucharea(this.pathElement);
+            pathTouchArea.classList.add("line");
+            this.HTMLRepresentation.appendChild(pathTouchArea);
+        }
 
         if(opts?.arrowed)
         {

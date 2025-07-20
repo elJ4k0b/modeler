@@ -60,6 +60,11 @@ export class LineVisual {
                 this.HTMLRepresentation.appendChild(bendpointToucharea);
             }
         }
+        else {
+            let pathTouchArea = this._createToucharea(this.pathElement);
+            pathTouchArea.classList.add("line");
+            this.HTMLRepresentation.appendChild(pathTouchArea);
+        }
         if (opts === null || opts === void 0 ? void 0 : opts.arrowed) {
             let arrowMarker = this._create_marker();
             this.HTMLRepresentation.appendChild(arrowMarker);
