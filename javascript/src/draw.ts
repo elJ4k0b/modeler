@@ -11,6 +11,11 @@ import { DashedLineVisual, DroppedLineVisual, LineVisual, StraightLineVisual } f
 
 let debug = true;
 
+const Z_INDEX_CONTAINER = 1;
+const Z_INDEX_ELEMENT = 1000;
+const Z_INDEX_LINE = 2000;
+const Z_INDEX_OVERLAY = 3000;
+
 const CANVAS_WIDTH = 100000;
 
 export function toggel_debuginfo(bool?: boolean)
@@ -35,7 +40,7 @@ function draw_container(container: ContainerView, div = document.createElement("
     div.style.width = `${container.dimension.width}px`;     
     div.style.height = `${container.dimension.height}px`;
     div.style.padding = "0px";
-    div.style.zIndex = container.zIndex.toString() || "1";
+    div.style.zIndex = (Z_INDEX_CONTAINER + container.zIndex).toString() || Z_INDEX_CONTAINER.toString();
 
     if(container.dragged)
     {
@@ -110,7 +115,7 @@ function draw_element(tableview: Tableview, div = document.createElement("div"))
     div.style.width = `${tableview.dimension.width}px`;//`${grid_size(1)}px`;     
     div.style.height = `${tableview.dimension.height}px`;//`${grid_size(1)}px`;
     div.style.padding = "5px";
-    div.style.zIndex = tableview.zIndex.toString() || "2";
+    div.style.zIndex = (Z_INDEX_ELEMENT + tableview.zIndex).toString() || Z_INDEX_ELEMENT.toString();
     
     if(tableview.dragged)
     {
@@ -309,6 +314,7 @@ function draw_overlay() {
     {
         let newOverlayContainerSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         newOverlayContainerSvg.setAttribute("id", "overlay");
+        newOverlayContainerSvg.style.zIndex = Z_INDEX_OVERLAY.toString();
         document.body.appendChild(newOverlayContainerSvg);
     }
 
@@ -321,6 +327,7 @@ function draw_overlay() {
     overlayContainerSvg.setAttribute("width","100%");
     overlayContainerSvg.setAttribute("height","100%");
     overlayContainerSvg.setAttribute("transform","matrix(1, 0, 0, 1, 50000, 50000)");
+    overlayContainerSvg.style.zIndex = Z_INDEX_OVERLAY.toString();
 
     let overlayableElements = [...diagview.containers.values(), ...diagview.tableviews.values()];
 
@@ -468,6 +475,7 @@ function draw_lines()
     svg.setAttribute("transform","matrix(1, 0, 0, 1, 50000, 50000)");
     svg.setAttribute("width","100%");
     svg.setAttribute("height","100%");
+    svg.style.zIndex =  Z_INDEX_LINE.toString();
     svg.innerHTML = "";
     
     for(let line of diagview.lineviews.values())
