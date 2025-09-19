@@ -41,7 +41,6 @@ class Tableview extends DiagramElementView
 
     public override move(left: number, top: number, manual: boolean = true)
     {
-        console.log(manual);
         log(`${this.dragged}`, "info");
         if(!manual)
         {

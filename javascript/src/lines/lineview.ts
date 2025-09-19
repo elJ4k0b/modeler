@@ -110,7 +110,7 @@ class LineView extends View
 
     public get originElement()
     {
-        let originElement = diagview.get_element(this.endId);
+        let originElement = diagview.get_element(this.startId);
         if(!originElement)
         {
             log(`OriginElement of line with id ${this.id} does not exist`, "error", {file: "lineview.ts", method: "targetElement"});

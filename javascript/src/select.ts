@@ -96,7 +96,7 @@ export function select(event: PointerEvent)
 }
 
 //Select element via code
-export function select_view(tblview: View)
+export function select_view(tblview: View, scroll:boolean = true)
 {
     let element = diagview.get_element(tblview.id);
     if(!element) return;
@@ -106,6 +106,6 @@ export function select_view(tblview: View)
         diagview.select(elemId, false);   
     }
     diagview.select(element.id, !diagview.is_selected(element.id));
-    scroll_to_selection();
+    if(scroll) scroll_to_selection();
     draw();
 }

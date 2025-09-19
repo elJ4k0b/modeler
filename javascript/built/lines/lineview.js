@@ -68,7 +68,7 @@ class LineView extends View {
         this.dimension.height = Math.abs(first.y - last.y);
     }
     get originElement() {
-        let originElement = diagview.get_element(this.endId);
+        let originElement = diagview.get_element(this.startId);
         if (!originElement) {
             log(`OriginElement of line with id ${this.id} does not exist`, "error", { file: "lineview.ts", method: "targetElement" });
             return new Tableview("", "", "", 0, 0, 0, 0, null);

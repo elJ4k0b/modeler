@@ -5,6 +5,12 @@ export class View {
         this.position = { top: 0, left: 0 };
         this.dimension = { width: 0, height: 0 };
     }
+    get center() {
+        return {
+            x: this.position.left + this.dimension.width / 2,
+            y: this.position.top + this.dimension.height / 2
+        };
+    }
 }
 export class DiagramElementView extends View {
     constructor() {

@@ -50,15 +50,6 @@ function displayLog(message, type, detail) {
                 container.style.backgroundColor = "#64AAE3";
                 break;
         }
-        container.style.color = "white";
-        container.style.fontFamily = "sans-serif";
-        container.style.position = "absolute";
-        container.style.top = "3rem";
-        container.style.left = "50%";
-        container.style.width = "fit-content";
-        container.style.transform = "translateX(-50%)";
-        container.style.borderRadius = "1000px";
-        container.style.padding = "1em";
         container.onclick = (event) => navigator.clipboard.writeText((container === null || container === void 0 ? void 0 : container.innerHTML) || "");
         document.body.appendChild(container);
     }

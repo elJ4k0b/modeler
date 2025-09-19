@@ -11,7 +11,6 @@ export function startbend(event, pointer) {
     event.stopPropagation();
     try {
         if (event.target instanceof Element && event.target.classList.contains("bendpoint")) {
-            console.log("Hallo");
             let bendpoint = event.target;
             let lineId = event.target.getAttribute("line-id") || "";
             let line = diagview.get_lineview(lineId);

@@ -116,12 +116,12 @@ class ZoomHandler
     _applyMatrix(element: HTMLElement, matrix: WebKitCSSMatrix)
     {
         try {
+            console.log(matrix);
             element.setAttribute("transform", matrix.toString());
             element.style.transform = matrix.toString();
         }catch (error)
         {
             console.log(error);
-            console.log(matrix);
         }
         
     }
