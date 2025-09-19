@@ -57,7 +57,7 @@ class Diagramview {
     {
         if(!this.startElement)
         {
-            log("Start element ist already null", "warning");
+            log("Start element is already null", "info");
             return;
         }
         notify("start-deselect", {id: this.startElement.id});
