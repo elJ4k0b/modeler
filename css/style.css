@@ -123,9 +123,8 @@ textPath {
     height: 90%;
     aspect-ratio: 1/1;
     top:5px;
-    right: 5px;
+    left: 5px;
     position: absolute;
-    transform: rotate(90deg);
     pointer-events: none;
     background-repeat: no-repeat;
 }
