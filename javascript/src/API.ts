@@ -7,13 +7,94 @@ import LineView from "./lines/lineview.js";
 import ContainerView from "./containerview.js";
 import zoomHandler from "./main.js";
 import { Type, typeMap} from "./Types.js";
-import { log } from "./Log.js";
+import { Environments, log, set_environment } from "./Log.js";
 import { DiagramElementView, View } from "./view.js";
 
-//inverses the current state of debug information visibility
-export function toggle_debug()
+
+let loading: boolean = false;
+
+export function enable_loading(bool: boolean)
 {
-    toggel_debuginfo();
+    loading = bool;
+}
+
+export function switch_environment(env: "production" | "development")
+{
+    
+    switch(env)
+    {
+        case "production":
+            set_environment(Environments.Production);
+            break;
+        case "development":
+            set_environment(Environments.Developement);
+            break;
+        default:
+            log(`Unknown environment: ${env}`, "error");
+    }
+}
+
+export function center_diagram(pID?: string)
+{
+    if(diagview.elements.size <= 0) return;
+
+    let selectionXmin = Math.min();
+    let selectionXmax = Math.max();
+    let selectionYmin = Math.min();
+    let selectionYmax = Math.max();
+
+    for(let elementId of diagview.elements.keys())
+    {
+        if(pID && elementId != pID) continue;
+        try {
+            let element = diagview.get_element(elementId);
+            if(!element) throw new Error(`Selected element with id ${elementId} does not exist on diagram. Diagram elements is inconsistent`);
+            
+            selectionXmax = Math.max(element.position.left+element.dimension.width, selectionXmax)
+            selectionYmax = Math.max(element.position.top+element.dimension.height, selectionYmax)
+
+            
+            selectionXmin = Math.min(element.position.left, selectionXmin);
+            selectionYmin = Math.min(element.position.top, selectionYmin);
+           
+        }
+        catch(error)
+        {
+            log(`Error in calculation of diagram bounds. Bounds might be inaccurate. - ${error}`, "warning", {file: "select.ts", method: "scroll_to_selection", "line": 40});
+            continue;
+        }
+    }
+    try {
+        let selectionHeight = selectionYmax - selectionYmin;
+        let selectionWidth = selectionXmax - selectionXmin;
+        let midX = selectionWidth/2 + selectionXmin
+        let midY = selectionHeight/2 + selectionYmin;
+        let windowDimension = zoomHandler.getWindowDimension();
+    
+        let toWide = selectionWidth * zoomHandler.zoomFactor > windowDimension.width;
+        let toHigh = selectionHeight * zoomHandler.zoomFactor > windowDimension.height;
+    
+        if(toWide || toHigh)
+        {
+            let xScale = (windowDimension.width)/(selectionWidth*1.2);
+            let yScale = (windowDimension.height)/(selectionHeight*1.2);
+            let desiredScale = Math.min(xScale, yScale); 
+            zoomHandler.setScale(zoomHandler.zoomFactor / desiredScale, {x: midX, y: midY});
+        }
+    
+        let target = {x: midX, y: midY};
+        zoomHandler.scrollTo(target, true);
+    }
+    catch(error)
+    {
+        log(`Error while trying to center diagram. - ${error}`, "error")
+    }
+}
+
+//inverses the current state of debug information visibility
+export function toggle_debug(bool: boolean)
+{
+    toggel_debuginfo(bool);
     draw();
 }
 
@@ -67,9 +148,16 @@ try {
 export function select_element(id:string, bool = true)
 {
 try {
-    let element = _try_get(id);
-    if(!element) return;
-    diagview.select(id, bool);
+    let element = _try_get<View>(id);
+    if(!element)
+    {
+        diagview.select_multiple(Array.from(diagview.elements.keys()), bool);
+    }
+    else
+    {
+        diagview.select(id, bool);
+    }
+    if(!loading) scroll_to_selection();
     draw();
 }catch(error: any)
 {
@@ -215,7 +303,7 @@ export function set_visible_range_margin(pTopRatio: number,  pRightRatio: number
     try {
         zoomHandler.set_viewport_margin(pTopRatio/100, pBottomRatio/100, pLeftRatio/100, pRightRatio/100);
         let diagram_empty = diagview.elements.size <= 0;
-        if(!diagram_empty) scroll_to_selection();
+        if(!diagram_empty && !loading) scroll_to_selection();
     }catch(error: any)
     {
         log(error, "warning");
@@ -255,7 +343,7 @@ export function set_visible_range_margin(pTopRatio: number,  pRightRatio: number
             container.add(tableview);
         }
         diagview.add_element(tableview);
-        select_view(tableview);
+        select_view(tableview, !loading);
         draw();
     }catch(error: any)
     {
@@ -276,7 +364,7 @@ export function add_container(id: string, title: string, pTypeId: string, x: num
             container.add(element);
         }
         diagview.add_element(element);
-        select_view(element);
+        select_view(element, !loading);
         draw();
     }catch(error: any)
     {
@@ -377,7 +465,7 @@ function _cleanType(typeIdString: string)
 export function notify(type: string, args: any)
 {
     try {
-        console.log(type);
+        if(loading == true) return; 
         switch (type)
         {
             case "start":
@@ -408,7 +496,7 @@ export function notify(type: string, args: any)
                 content_added_to_container(args.elementId, args.containerId);
                 break;
             case "container-resize":
-                container_resized(args.id, args.width/size, args.height/size);
+                container_resized(args.id, pos_to_grid(args.x), pos_to_grid(args.y), args.width / size, args.height / size);
         }
     }
     catch(error)
@@ -439,11 +527,13 @@ function content_moved(id: string, x: number, y: number)
 	B4A.CallSub('ContentMoved', true, id, x, y);
 }
 
-function container_resized(id: string, w: number, h: number)
+function container_resized(id: string, x:number, y: number, w: number, h: number)
 {
-    log(`content ${id} resized to ${w}, ${h}}`, "info");
+    log(`content ${id} resized to ${w}, ${h}`, "info");
     // @ts-ignore
-	B4A.CallSub('ContainerResized', true, id, w, h);
+    B4A.CallSub('ContainerResized', true, id, `${x}, ${y}, ${w}, ${h}`);
+    //@ts-ignore
+	//B4A.CallSub('ContainerResized', true, id, x, y, w, h);
 }
 
 function content_added_to_container(id: number, containerid: number)

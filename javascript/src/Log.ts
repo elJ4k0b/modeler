@@ -1,4 +1,6 @@
-enum Environments {
+import draw, { toggel_debuginfo } from "./draw.js";
+
+export enum Environments {
     Production, 
     Developement
 }
@@ -17,6 +19,18 @@ let currentEnvironment: Environments = DEFAULT_ENVIRONMENT;
 export function set_environment(pEnvironment: Environments)
 {
     currentEnvironment = pEnvironment;
+    toggel_debuginfo(pEnvironment == Environments.Developement);
+    if(pEnvironment == Environments.Production)
+    {
+        let container = document.getElementById("errorContainer");
+        if(container) container.style.display = "none";
+    }
+    else if(pEnvironment == Environments.Developement)
+    {
+        let container = document.getElementById("errorContainer");
+        if(container) container.style.display = "block";
+    }
+    draw();
 }
 
 
@@ -76,17 +90,9 @@ function displayLog(message: string, type: LogTypes, detail?: LogDetail)
                 container.style.backgroundColor = "#64AAE3";
                 break;
         }
-        container.style.color = "white";
-        container.style.fontFamily = "sans-serif";
-        container.style.position = "absolute";
-        container.style.top = "3rem";
-        container.style.left = "50%";
-        container.style.width = "fit-content";
-        container.style.transform  = "translateX(-50%)";
-        container.style.borderRadius = "1000px";
-        container.style.padding = "1em";
-        container.onclick = (event) => navigator.clipboard.writeText(container?.innerHTML || ""); 
-        document.body.appendChild(container);
+        
+        container.onclick = (event) => navigator.clipboard.writeText(container?.innerHTML || "");
+        if(currentEnvironment == Environments.Developement) document.body.appendChild(container);
     }
     container.innerHTML = `${message} - Occured in ${detail?.file || "not provided file"} in method ${detail?.method || "not provided method"} in line ${detail?.line || "not provided line"}`;
 }

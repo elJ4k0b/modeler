@@ -120,8 +120,7 @@ class ZoomHandler
             element.style.transform = matrix.toString();
         }catch (error)
         {
-            console.log(error);
-            console.log(matrix);
+            log(`Failed to apply transform matrix - ${error}`, "error");
         }
         
     }
@@ -235,7 +234,6 @@ class ZoomHandler
 
     start_pan(event: PointerEvent)
     {
-        console.log("startpan");
         let start: Point = {x: 0, y: 0};
         start.x = event.clientX;
         start.y = event.clientY;
@@ -246,7 +244,6 @@ class ZoomHandler
     
     pan(event: PointerEvent)
     {
-        console.log("pan");
         let delta: Point = {x: 0, y: 0};
         let matrix = this._getMatrix(this.viewport);
         delta.x = event.clientX - this.panstart.x;

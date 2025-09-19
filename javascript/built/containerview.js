@@ -4,6 +4,7 @@ import { DiagramElementView } from "./view.js";
 class ContainerView extends DiagramElementView {
     constructor(pId, pTitle, pType, pX, pY, pWidth, pHeight, pContainer) {
         super();
+        this._zIndex = 0;
         this.id = pId;
         this.container = pContainer;
         this.position = {
@@ -29,9 +30,21 @@ class ContainerView extends DiagramElementView {
         this._dragged = false;
         this.highlighted = false;
     }
+    get zIndex() { return this._zIndex; }
+    set zIndex(z) {
+        super.zIndex = z;
+        for (let child of this.children.values()) {
+            child.zIndex = z + 1;
+        }
+    }
     add(tblview) {
+        if (tblview instanceof ContainerView && tblview.children.has(this.id))
+            return;
+        if (tblview.id == this.id)
+            return;
         if (this.children.has(tblview.id))
             return;
+        tblview.zIndex = this._zIndex + 1;
         this.children.set(tblview.id, tblview);
         this.update_bounds();
     }
@@ -53,7 +66,7 @@ class ContainerView extends DiagramElementView {
             return;
         for (let child of this.children.values()) {
             child.dragged = this._dragged;
-            child.move(child.position.left + deltaX, child.position.top + deltaY, false);
+            child.move(child.position.left + deltaX, child.position.top + deltaY, true);
         }
     }
     //WARNING: This could cause performance issues
@@ -115,8 +128,7 @@ class ContainerView extends DiagramElementView {
         this.dimension.height = attach_to_grid(height);
         this.position.left = attach_to_grid(x);
         this.position.top = attach_to_grid(y);
-        notify("container-resize", { id: this.id, width: this.dimension.width, height: this.dimension.height });
-        notify("content-move", { id: this.id, x: this.position.left, y: this.position.top });
+        notify("container-resize", { id: this.id, x: this.position.left, y: this.position.top, width: this.dimension.width, height: this.dimension.height });
     }
 }
 export default ContainerView;

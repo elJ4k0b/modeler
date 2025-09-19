@@ -24,7 +24,7 @@ export function create_start_marker() {
     let container = document.createElementNS("http://www.w3.org/2000/svg", "g");
     container.setAttribute("width", "32");
     container.setAttribute("height", "32");
-    container.setAttribute("fill", "#1f6aff");
+    container.setAttribute("fill", style.START_MARKER_FILL);
     container.setAttribute("viewbox", "0 0 16 16");
     let path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.setAttribute("d", "M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z");
@@ -93,9 +93,20 @@ export function drawline_at(line, startpoint, endpoint, bendpoints = []) {
     all_points.push(endpoint);
     all_points[0] = calculateStartPosition(all_points);
     all_points[all_points.length - 1] = calculateEndPosition(all_points, type == "line-dropped-arrowed");
-    if (all_points.length == 2 && startpoint.y != endpoint.y && startpoint.x != endpoint.x) {
-        line.addBendpoint(new BendPoint({ x: all_points[0].x, y: all_points[1].y }));
-        all_points.splice(1, 0, { x: all_points[0].x, y: all_points[1].y });
+    if (all_points.length == 2 && Math.abs(startpoint.y - endpoint.y) > 10 && Math.abs(startpoint.x - endpoint.x) > 10 && !type.includes('straight')) {
+        if (!type.includes('dropped')) {
+            let deltaY = Math.abs(all_points[0].y - all_points[1].y);
+            let higherPoint = all_points[0].y < all_points[1].y ? all_points[0] : all_points[1];
+            all_points[0] = { x: startpoint.x, y: higherPoint.y };
+            line.addBendpoint(new BendPoint({ x: all_points[0].x, y: higherPoint.y + deltaY / 2 }));
+            all_points.splice(1, 0, { x: all_points[0].x, y: higherPoint.y + deltaY / 2 });
+            line.addBendpoint(new BendPoint({ x: all_points[1].x, y: higherPoint.y + deltaY / 2 }));
+            all_points.splice(2, 0, { x: all_points[2].x, y: higherPoint.y + deltaY / 2 });
+        }
+        else {
+            line.addBendpoint(new BendPoint({ x: all_points[0].x, y: all_points[1].y }));
+            all_points.splice(1, 0, { x: all_points[0].x, y: all_points[1].y });
+        }
     }
     //chop ends of
     let current_start = all_points[0];
@@ -174,8 +185,6 @@ function calculateEndPosition(all_points, dropped) {
     //Pfeil kommt immer links oder rechts an 
     //SONDERFALL: gleiche x-koordinate ODER line-type ist dropped
     if (Math.abs(deltaX) <= style.ELEMENT_WIDTH / 2) {
-        log("Endpoint special case", "error");
-        console.error("special case");
         end_point.x = end_point.x + style.ELEMENT_WIDTH / 2;
         if (deltaY < 0) {
             end_point.y = end_point.y;

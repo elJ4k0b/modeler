@@ -18,7 +18,6 @@ export function startbend(event: PointerEvent, pointer: CustomPointer)
     {
         if(event.target instanceof Element && event.target.classList.contains("bendpoint"))
         {
-            console.log("Hallo");
             let bendpoint = event.target;
             let lineId = event.target.getAttribute("line-id") || "";
             let line = diagview.get_lineview(lineId);
@@ -63,7 +62,6 @@ export function bend(event: PointerEvent, pointer: CustomPointer)
             throw new Error("Current BendPoint is empty. Startbend must be called before bend to prevent this.");
         let xPosition = (event.clientX - zoomHandler.viewportCenter.x)/zoomHandler.zoomFactor;
         let yPosition = (event.clientY - zoomHandler.viewportCenter.y)/zoomHandler.zoomFactor;
-    
         currentBendpoint.x = xPosition;
         currentBendpoint.y = yPosition;
         draw();

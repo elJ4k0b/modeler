@@ -1,3 +1,10 @@
+let arrow_types = {
+    "line": "line",
+    "line-dashed": "line-dashed",
+    "line-dashed-arrowed": "line-dashed-arrowed",
+    "line-arrowed": "line-arrowed",
+    "line-dropped-arrowed": "line-dropped-arrowed",
+};
 export class Type {
     constructor(pTypeId, pTypeLabel, pTypeLine, pTypeIcon64) {
         this.id = "";
@@ -6,7 +13,8 @@ export class Type {
         this.icon = "";
         this.id = pTypeId;
         this.label = pTypeLabel;
-        this.lineStyle = pTypeLine;
+        this.lineStyle = pTypeLine || "line";
+        ;
         this.icon = pTypeIcon64;
         this.createIconCSSClass();
     }

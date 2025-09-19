@@ -5,6 +5,12 @@ export class View {
         this.position = { top: 0, left: 0 };
         this.dimension = { width: 0, height: 0 };
     }
+    get center() {
+        return {
+            x: this.position.left + this.dimension.width / 2,
+            y: this.position.top + this.dimension.height / 2
+        };
+    }
 }
 export class DiagramElementView extends View {
     constructor() {
@@ -12,10 +18,23 @@ export class DiagramElementView extends View {
         this._dragged = false;
         this.incomingRelations = [];
         this.outgoingRelations = [];
+        this._zIndex = 0;
     }
     get dragged() { return this._dragged; }
     ;
-    set dragged(dragging) { this._dragged = dragging; }
+    set dragged(dragging) {
+        this._dragged = dragging;
+        if (dragging)
+            this.zIndex = 1000; // Bring to front when dragged
+        else
+            this.zIndex = 0; // Reset z-index when not dragged
+    }
+    ;
+    set zIndex(z) {
+        this._zIndex = z;
+    }
+    ;
+    get zIndex() { return this._zIndex; }
     ;
     addRelation(relation, direction) {
         let array = direction == "incoming" ? this.incomingRelations : this.outgoingRelations;

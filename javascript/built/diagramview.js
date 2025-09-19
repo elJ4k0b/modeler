@@ -221,6 +221,11 @@ class Diagramview {
             this.selected_elements.delete(id);
         element.selected = bool;
     }
+    select_multiple(ids, bool) {
+        for (let id of ids) {
+            this.select(id, bool);
+        }
+    }
     removeFromCurrentContainer(elementId) {
         try {
             let element = this.get_element(elementId);

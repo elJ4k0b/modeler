@@ -1,14 +1,22 @@
 import { diagview } from "./diagramview.js";
-import { create_start_marker, drawline_at } from "./lines/lines.js";
+import { create_start_marker } from "./lines/lines.js";
 import { size } from "./grid.js";
 import zoomHandler from "./main.js";
 import * as style from "./Styles.js";
 import { typeMap } from "./Types.js";
 import { log } from "./Log.js";
+import { DroppedLineVisual, LineVisual, StraightLineVisual } from "./lines/linevisual.js";
 let debug = true;
+const Z_INDEX_CONTAINER = 1;
+const Z_INDEX_ELEMENT = 1000;
+const Z_INDEX_LINE = 2000;
+const Z_INDEX_OVERLAY = 3000;
 const CANVAS_WIDTH = 100000;
-export function toggel_debuginfo() {
-    debug = !debug;
+export function toggel_debuginfo(bool) {
+    if (bool == undefined)
+        debug = !debug;
+    else
+        debug = bool;
 }
 function draw_container(container, div = document.createElement("div")) {
     div.classList.add("draggable");
@@ -23,7 +31,7 @@ function draw_container(container, div = document.createElement("div")) {
     div.style.width = `${container.dimension.width}px`;
     div.style.height = `${container.dimension.height}px`;
     div.style.padding = "0px";
-    div.style.zIndex = "1";
+    div.style.zIndex = (Z_INDEX_CONTAINER + container.zIndex).toString() || Z_INDEX_CONTAINER.toString();
     if (container.dragged) {
         div.classList.remove("transition-move");
     }
@@ -85,7 +93,7 @@ function draw_element(tableview, div = document.createElement("div")) {
     div.style.width = `${tableview.dimension.width}px`; //`${grid_size(1)}px`;     
     div.style.height = `${tableview.dimension.height}px`; //`${grid_size(1)}px`;
     div.style.padding = "5px";
-    div.style.zIndex = "2";
+    div.style.zIndex = (Z_INDEX_ELEMENT + tableview.zIndex).toString() || Z_INDEX_ELEMENT.toString();
     if (tableview.dragged) {
         div.classList.remove("transition-move");
     }
@@ -238,6 +246,7 @@ function draw_overlay() {
     if (!overlayContainerSvg) {
         let newOverlayContainerSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         newOverlayContainerSvg.setAttribute("id", "overlay");
+        newOverlayContainerSvg.style.zIndex = Z_INDEX_OVERLAY.toString();
         document.body.appendChild(newOverlayContainerSvg);
     }
     overlayContainerSvg = document.getElementById("overlay");
@@ -248,6 +257,7 @@ function draw_overlay() {
     overlayContainerSvg.setAttribute("width", "100%");
     overlayContainerSvg.setAttribute("height", "100%");
     overlayContainerSvg.setAttribute("transform", "matrix(1, 0, 0, 1, 50000, 50000)");
+    overlayContainerSvg.style.zIndex = Z_INDEX_OVERLAY.toString();
     let overlayableElements = [...diagview.containers.values(), ...diagview.tableviews.values()];
     for (let view of overlayableElements) {
         let group = overlayContainerSvg.querySelector(`[overlay-id="${view.id}"]`);
@@ -366,41 +376,44 @@ function draw_lines() {
     svg.setAttribute("transform", "matrix(1, 0, 0, 1, 50000, 50000)");
     svg.setAttribute("width", "100%");
     svg.setAttribute("height", "100%");
+    svg.style.zIndex = Z_INDEX_LINE.toString();
     svg.innerHTML = "";
-    let labelContainer = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    labelContainer.setAttribute("dy", "-20");
     for (let line of diagview.lineviews.values()) {
-        let label = document.createElementNS("http://www.w3.org/2000/svg", "textPath");
-        label.setAttribute("href", "#" + line.id);
-        label.setAttribute("text-anchor", "middle");
-        label.setAttribute("startOffset", "50%");
-        label.innerHTML = line.title;
-        labelContainer.appendChild(label);
         try {
             let start = diagview.get_element(line.startId);
             let end = diagview.get_element(line.endId);
             if (start == undefined || end == undefined)
                 throw new Error(`The start or end values of line with id ${line.id} are undefined`);
-            drawline_at(line, { x: start.position.left, y: start.position.top }, { x: end.position.left, y: end.position.top }, line.bendpoints);
+            let lineType = typeMap.get(line.typeId);
+            let lineIsArrowed = (lineType === null || lineType === void 0 ? void 0 : lineType.lineStyle.includes('arrowed')) || false;
+            let lineIsDashed = (lineType === null || lineType === void 0 ? void 0 : lineType.lineStyle.includes('dashed')) || false;
+            let opts = { arrowed: lineIsArrowed, dashed: lineIsDashed };
+            let visual;
+            if (lineType === null || lineType === void 0 ? void 0 : lineType.lineStyle.includes("dropped"))
+                visual = new DroppedLineVisual(line, opts);
+            else if (lineType === null || lineType === void 0 ? void 0 : lineType.lineStyle.includes("straight"))
+                visual = new StraightLineVisual(line, opts);
+            else
+                visual = new LineVisual(line, opts);
+            svg.appendChild(visual.HTMLRepresentation);
+            //drawline_at(line, {x:start.position.left, y:start.position.top}, {x:end.position.left, y:end.position.top}, line.bendpoints);
+            if (line == diagview.startElement) {
+                let path = document.getElementById(line.id);
+                if (!path || !(path.constructor == SVGPathElement))
+                    return;
+                let pathLength = path.getTotalLength();
+                let point = path.getPointAtLength(0.5 * pathLength);
+                let marker = create_start_marker();
+                marker.setAttribute("transform", `matrix(2, 0, 0, 2, ${point.x - 16}, ${point.y - 48})`);
+                svg.appendChild(marker);
+            }
         }
         catch (error) {
             log(`Failed to draw line with id ${line.id} - ${error}`, "error");
             continue;
         }
-        if (line == diagview.startElement) {
-            let path = document.getElementById(line.id);
-            if (!path || !(path.constructor == SVGPathElement))
-                return;
-            let pathLength = path.getTotalLength();
-            let point = path.getPointAtLength(0.5 * pathLength);
-            let marker = create_start_marker();
-            marker.setAttribute("transform", `matrix(2, 0, 0, 2, ${point.x - 16}, ${point.y + 16})`);
-            svg.appendChild(marker);
-        }
-        else {
-        }
     }
-    svg.appendChild(labelContainer);
+    //svg.appendChild(labelContainer);
     svg.innerHTML += "";
 }
 export default function draw() {

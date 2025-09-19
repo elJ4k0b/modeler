@@ -107,7 +107,6 @@ class CustomEvents extends MouseEvent
         }
         else if((target.classList.contains("line") && diagview.is_selected(target.id)) || target.classList.contains("bendpoint"))
         {
-            console.log(target.classList);
             switch_tool(Tools.bend);
             startbend(event, pointer);
             return;
@@ -201,9 +200,6 @@ class CustomEvents extends MouseEvent
 
         let dropTargets = document.elementsFromPoint(event.clientX, event.clientY);
         let draggedElement = event.target;
-
-        let draggedElementIsContainer = diagview.get_container(draggedElement.id) != null;
-        if(draggedElementIsContainer) return;
 
         for(let target of dropTargets)
         {

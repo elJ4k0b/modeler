@@ -7,10 +7,71 @@ import LineView from "./lines/lineview.js";
 import ContainerView from "./containerview.js";
 import zoomHandler from "./main.js";
 import { Type, typeMap } from "./Types.js";
-import { log } from "./Log.js";
+import { Environments, log, set_environment } from "./Log.js";
+let loading = false;
+export function enable_loading(bool) {
+    loading = bool;
+}
+export function switch_environment(env) {
+    switch (env) {
+        case "production":
+            set_environment(Environments.Production);
+            break;
+        case "development":
+            set_environment(Environments.Developement);
+            break;
+        default:
+            log(`Unknown environment: ${env}`, "error");
+    }
+}
+export function center_diagram(pID) {
+    if (diagview.elements.size <= 0)
+        return;
+    let selectionXmin = Math.min();
+    let selectionXmax = Math.max();
+    let selectionYmin = Math.min();
+    let selectionYmax = Math.max();
+    for (let elementId of diagview.elements.keys()) {
+        if (pID && elementId != pID)
+            continue;
+        try {
+            let element = diagview.get_element(elementId);
+            if (!element)
+                throw new Error(`Selected element with id ${elementId} does not exist on diagram. Diagram elements is inconsistent`);
+            selectionXmax = Math.max(element.position.left + element.dimension.width, selectionXmax);
+            selectionYmax = Math.max(element.position.top + element.dimension.height, selectionYmax);
+            selectionXmin = Math.min(element.position.left, selectionXmin);
+            selectionYmin = Math.min(element.position.top, selectionYmin);
+        }
+        catch (error) {
+            log(`Error in calculation of diagram bounds. Bounds might be inaccurate. - ${error}`, "warning", { file: "select.ts", method: "scroll_to_selection", "line": 40 });
+            continue;
+        }
+    }
+    try {
+        let selectionHeight = selectionYmax - selectionYmin;
+        let selectionWidth = selectionXmax - selectionXmin;
+        let midX = selectionWidth / 2 + selectionXmin;
+        let midY = selectionHeight / 2 + selectionYmin;
+        let windowDimension = zoomHandler.getWindowDimension();
+        let toWide = selectionWidth * zoomHandler.zoomFactor > windowDimension.width;
+        let toHigh = selectionHeight * zoomHandler.zoomFactor > windowDimension.height;
+        if (toWide || toHigh) {
+            let xScale = (windowDimension.width) / (selectionWidth * 1.2);
+            let yScale = (windowDimension.height) / (selectionHeight * 1.2);
+            let desiredScale = Math.min(xScale, yScale);
+            zoomHandler.setScale(zoomHandler.zoomFactor / desiredScale, { x: midX, y: midY });
+        }
+        let target = { x: midX, y: midY };
+        zoomHandler.scrollTo(target, true);
+    }
+    catch (error) {
+        log(`Error while trying to center diagram. - ${error}`, "error");
+    }
+}
 //inverses the current state of debug information visibility
-export function toggle_debug() {
-    toggel_debuginfo();
+export function toggle_debug(bool) {
+    toggel_debuginfo(bool);
     draw();
 }
 //empty diagram
@@ -54,9 +115,14 @@ export function set_start(id, bool = true) {
 export function select_element(id, bool = true) {
     try {
         let element = _try_get(id);
-        if (!element)
-            return;
-        diagview.select(id, bool);
+        if (!element) {
+            diagview.select_multiple(Array.from(diagview.elements.keys()), bool);
+        }
+        else {
+            diagview.select(id, bool);
+        }
+        if (!loading)
+            scroll_to_selection();
         draw();
     }
     catch (error) {
@@ -178,7 +244,7 @@ export function set_visible_range_margin(pTopRatio, pRightRatio, pBottomRatio, p
     try {
         zoomHandler.set_viewport_margin(pTopRatio / 100, pBottomRatio / 100, pLeftRatio / 100, pRightRatio / 100);
         let diagram_empty = diagview.elements.size <= 0;
-        if (!diagram_empty)
+        if (!diagram_empty && !loading)
             scroll_to_selection();
     }
     catch (error) {
@@ -212,7 +278,7 @@ export function add_element(id, title, pTypeId, x, y, containerId, start = false
             container.add(tableview);
         }
         diagview.add_element(tableview);
-        select_view(tableview);
+        select_view(tableview, !loading);
         draw();
     }
     catch (error) {
@@ -230,7 +296,7 @@ export function add_container(id, title, pTypeId, x, y, width, height, container
             container.add(element);
         }
         diagview.add_element(element);
-        select_view(element);
+        select_view(element, !loading);
         draw();
     }
     catch (error) {
@@ -315,7 +381,8 @@ function _cleanType(typeIdString) {
  */
 export function notify(type, args) {
     try {
-        console.log(type);
+        if (loading == true)
+            return;
         switch (type) {
             case "start":
                 start_selected(args.id);
@@ -345,7 +412,7 @@ export function notify(type, args) {
                 content_added_to_container(args.elementId, args.containerId);
                 break;
             case "container-resize":
-                container_resized(args.id, args.width / size, args.height / size);
+                container_resized(args.id, pos_to_grid(args.x), pos_to_grid(args.y), args.width / size, args.height / size);
         }
     }
     catch (error) {
@@ -367,10 +434,12 @@ function content_moved(id, x, y) {
     // @ts-ignore
     B4A.CallSub('ContentMoved', true, id, x, y);
 }
-function container_resized(id, w, h) {
-    log(`content ${id} resized to ${w}, ${h}}`, "info");
+function container_resized(id, x, y, w, h) {
+    log(`content ${id} resized to ${w}, ${h}`, "info");
     // @ts-ignore
-    B4A.CallSub('ContainerResized', true, id, w, h);
+    B4A.CallSub('ContainerResized', true, id, `${x}, ${y}, ${w}, ${h}`);
+    //@ts-ignore
+    //B4A.CallSub('ContainerResized', true, id, x, y, w, h);
 }
 function content_added_to_container(id, containerid) {
     log(`content ${id} added to container ${containerid}`, "info");
