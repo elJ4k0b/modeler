@@ -31,7 +31,6 @@ function draw_container(container: ContainerView, div = document.createElement("
     div.classList.add("container");
     div.classList.add("shadow-medium");
     div.classList.add("transition-move");
-    
 
     div.id = container.id;
     div.style.position = "absolute";
@@ -66,6 +65,8 @@ function draw_container(container: ContainerView, div = document.createElement("
         div.classList.remove("highlighted");
     }
 
+
+    //Try setting up container title bar
     try {
         let titleContainer = div.querySelector(".container-title") as HTMLElement;
         titleContainer.style.width = `${container.dimension.height}px`;
@@ -85,7 +86,27 @@ function draw_container(container: ContainerView, div = document.createElement("
         titleContainer.appendChild(title);
         div.appendChild(titleContainer);
     }
-    
+
+    //Adding icon to container title bar 
+
+    let iconContainer = div.querySelector(".icon-container") as HTMLElement
+    if(!iconContainer)
+    {
+        iconContainer = document.createElement("div");
+    }
+    iconContainer.setAttribute("class", "");
+    iconContainer.classList.add("icon-container");
+    iconContainer.classList.add(container.typeId);
+
+    try {
+        let titleContainer = div.querySelector(".container-title") as HTMLElement;
+        titleContainer.appendChild(iconContainer);
+    }
+    catch(error)
+    {
+        log("container has no title bar - can not add icon to missing title bar", "warning");
+    }
+
     let debugInfo = div.querySelector(".debug-info");
     if(!debugInfo)
     {

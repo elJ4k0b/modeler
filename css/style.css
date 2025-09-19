@@ -119,9 +119,19 @@ textPath {
     background-repeat: no-repeat;
 }
 
+.container-title > .icon-container {
+    height: 90%;
+    aspect-ratio: 1/1;
+    top:5px;
+    right: 5px;
+    position: absolute;
+    transform: rotate(90deg);
+    pointer-events: none;
+    background-repeat: no-repeat;
+}
+
 .card-start {
     box-shadow: 0 0 1.5rem rgba(0, 0, 0, 0.2);
-
 }
 .card-start::before {
     position: absolute;
