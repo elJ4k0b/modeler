@@ -123,7 +123,7 @@ export function drawline_at(line: LineView, startpoint: Point, endpoint: Point, 
     {
         if(!type.includes('dropped'))
         {
-            
+            console.log("wow")
             let deltaY = Math.abs(all_points[0].y - all_points[1].y);
             let higherPoint = all_points[0].y < all_points[1].y? all_points[0]: all_points[1];
 
@@ -136,6 +136,7 @@ export function drawline_at(line: LineView, startpoint: Point, endpoint: Point, 
         }
         else
         {
+            console.log("wow2")
             line.addBendpoint(new BendPoint({x:all_points[0].x, y: all_points[1].y}));
             all_points.splice(1, 0, {x:all_points[0].x, y: all_points[1].y});
         }
