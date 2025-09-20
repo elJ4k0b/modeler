@@ -23,6 +23,8 @@ export abstract class View
             y: this.position.top + this.dimension.height/2
         };
     }
+    
+    public select(bool: boolean): void {this.selected = bool}
 }
 
 export abstract class DiagramElementView  extends View

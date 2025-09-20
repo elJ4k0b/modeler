@@ -153,9 +153,20 @@ function draw_element(tableview: Tableview, div = document.createElement("div"))
         div.classList.remove("card-start");
     }
 
-    let typeContainer = div.querySelector(".card-type");
+    let typeContainer = div.querySelector(".card-type") || div.querySelector(".card-type-collapsed");
     if(typeContainer)
     {
+        if(tableview.selected)
+        {
+            typeContainer.classList.remove("card-type-collapsed");
+            typeContainer.classList.add("card-type");
+        }
+        else
+        {
+            typeContainer.classList.remove("card-type");
+            typeContainer.classList.add("card-type-collapsed");
+        }
+
         let type = typeMap.get(tableview.typeId)?.label || "none";
         let typeContainerText = typeContainer.querySelector("span");
         if(!typeContainerText)
@@ -169,7 +180,10 @@ function draw_element(tableview: Tableview, div = document.createElement("div"))
     {
         try {
             let newTypeContainer = document.createElement("div") as HTMLDivElement;
-            newTypeContainer.classList.add("card-type");
+            if(tableview.selected)
+                newTypeContainer.classList.add("card-type");
+            else
+                newTypeContainer.classList.add("card-type-collapsed");
             newTypeContainer.style.width = `${tableview.dimension.width * 2}px`;
     
             let title = document.createElement("span");

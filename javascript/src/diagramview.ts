@@ -271,7 +271,7 @@ class Diagramview {
             this.selected_elements.delete(id);
         } 
         else this.selected_elements.delete(id);
-        element.selected = bool;
+        element.select(bool);
     }
 
     select_multiple(ids: Array<string>, bool: boolean)

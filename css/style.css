@@ -88,8 +88,27 @@ textPath {
     font-size: var(--title-size);
     pointer-events: none;
     color: var(--text-color);
+    text-wrap: wrap;
+    word-wrap: anywhere;
+    white-space: pre-wrap;
+    
+}
+
+.card-type-collapsed {
+    position: absolute;
+    text-align: center;
+    bottom: 100%;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    height: fit-content;
+
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: var(--title-size);
+    pointer-events: none;
+    color: var(--text-color);
     overflow: hidden;
     text-overflow: ellipsis;
+    text-wrap: nowrap;
 }
 
 .card > .card-title {
