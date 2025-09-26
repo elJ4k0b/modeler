@@ -4,7 +4,7 @@ import { diagview } from "./diagramview.js";
 import { grid_to_pos, size, grid_size, pos_to_grid, grid_to_poscenter} from "./grid.js";
 import Tableview from "./Tableview.js";
 import LineView from "./lines/lineview.js";
-import ContainerView from "./containerview.js";
+import ContainerView, { ContainerOrientations } from "./containerview.js";
 import zoomHandler from "./main.js";
 import { Type, typeMap} from "./Types.js";
 import { Environments, log, set_environment } from "./Log.js";
@@ -351,14 +351,14 @@ export function set_visible_range_margin(pTopRatio: number,  pRightRatio: number
     }
 }
 
-export function add_container(id: string, title: string, pTypeId: string, x: number, y: number, width: number, height: number, containerId: string)
+export function add_container(id: string, title: string, pTypeId: string, x: number, y: number, width: number, height: number, containerId: string, orientation: ContainerOrientations = "horizontal")
 {
     try {
         x = grid_to_pos(x);
         y = grid_to_pos(y);
         let container = diagview.get_container(containerId) || null;
         let cleanTypeId = _cleanType(pTypeId);
-        let element = new ContainerView(id, title, cleanTypeId, x, y, grid_size(width), grid_size(height), container);
+        let element = new ContainerView(id, title, cleanTypeId, x, y, grid_size(width), grid_size(height), {container, orientation});
         if(container)
         {
             container.add(element);

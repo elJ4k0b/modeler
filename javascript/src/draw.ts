@@ -69,7 +69,11 @@ function draw_container(container: ContainerView, div = document.createElement("
     //Try setting up container title bar
     try {
         let titleContainer = div.querySelector(".container-title") as HTMLElement;
-        titleContainer.style.width = `${container.dimension.height}px`;
+        if(container.orientation == "vertical")
+            titleContainer.style.width = `${container.dimension.width}px`;
+        else
+            titleContainer.style.width = `${container.dimension.height}px`;
+
         let titleContainerText = titleContainer.querySelector("p");
         if(!titleContainerText) throw new Error(`TitleContainer does not have title text element on container with id ${container.id}`);
         titleContainerText.innerHTML = container.title;
@@ -78,7 +82,16 @@ function draw_container(container: ContainerView, div = document.createElement("
 
         let titleContainer = document.createElement("div");    
         titleContainer.classList.add("container-title");
-        titleContainer.style.width = `${container.dimension.height}px`;
+        if(container.orientation == "vertical")
+        {
+            titleContainer.classList.add("container-orientation-vertical");
+            titleContainer.style.width = `${container.dimension.width}px`;
+        }
+        else
+        {        
+            titleContainer.classList.add("container-orientation-horizontal");
+            titleContainer.style.width = `${container.dimension.height}px`;
+        }
         let title = document.createElement("p");
         title.style.textOverflow = "ellipsis"
         title.style.textAlign = "center";
