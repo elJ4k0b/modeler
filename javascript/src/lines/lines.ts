@@ -7,8 +7,10 @@ let arrow_types: {[index: string]: ArrowType} = {
     "line": "line",
     "line-dashed": "line-dashed",
     "line-arrowed": "line-arrowed",
+    "line-straight": "line-straight",
     "line-dashed-arrowed": "line-dashed-arrowed",
     "line-dropped-arrowed": "line-dropped-arrowed",
+    "line-straight-arrowed": "line-straight-arrowed",
 }
 
 export type ArrowType = "line" | "line-dashed" | "line-arrowed" | "line-dashed-arrowed" | "line-dropped-arrowed" | "line-straight-arrowed" | "line-straight" ; 

@@ -11,7 +11,6 @@ export class Marker
 type LineAttachmentAxis =  "x" | "y" | "closest"
 type Point = {x: number, y: number};
 interface PathStyle {
-    
     stroke: string,
     strokeDasharray: string,
     strokeLinecap: string,
@@ -285,12 +284,20 @@ export class LineVisual
     {
         let labelContainer = document.createElementNS("http://www.w3.org/2000/svg", "text");
         labelContainer.setAttribute("dy", "-20");
-
+        if(line.originElement.center.x > line.targetElement.center.x)
+        {
+            labelContainer.setAttribute("transform", "scale(-1,-1)");
+            labelContainer.setAttribute("transform-origin", "center center");
+            labelContainer.setAttribute("dy", "20");
+            labelContainer.style.transformBox = "fill-box";
+        }
+        
         let label = document.createElementNS("http://www.w3.org/2000/svg", "textPath");
         label.setAttribute("href", "#"+line.id);
         label.setAttribute("text-anchor", "middle");
         label.setAttribute("startOffset", "50%");
         label.innerHTML = line.title;
+
 
         labelContainer.appendChild(label);
         return labelContainer;
