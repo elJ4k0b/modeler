@@ -3,23 +3,27 @@ import draw from "./draw.js";
 import { attach_to_grid, grid_size } from "./grid.js";
 import { DiagramElementView, View } from "./view.js";
 
+export type ContainerOrientations = "vertical" | "horizontal";
+
 class ContainerView extends DiagramElementView
 {
     public id: string;
     public container: ContainerView | null;
     private min: {width: number, height: number};
     private max: {x: number, y: number};
+    private _orientation: ContainerOrientations = "horizontal";
     public children: Map<string, DiagramElementView>;
     public title: string;
     public typeId: string;
     public override highlighted: boolean;
-
-    constructor(pId: string, pTitle: string, pType: string, pX: number, pY: number,  pWidth: number, pHeight: number, pContainer: ContainerView | null)
+    
+    constructor(pId: string, pTitle: string, pType: string, pX: number, pY: number,  pWidth: number, pHeight: number, pOpts: {container: ContainerView | null, orientation: ContainerOrientations})
     {
         super();
         this._zIndex = 0;
         this.id = pId;
-        this.container = pContainer;
+        this.container = pOpts.container;
+        this.orientation = pOpts.orientation || this.orientation;
         this.position = {
             top: pY,
             left: pX,
@@ -43,6 +47,9 @@ class ContainerView extends DiagramElementView
         this._dragged = false;
         this.highlighted = false;
     }
+    
+    public get orientation(): ContainerOrientations {return this._orientation};
+    public set orientation(orientation: ContainerOrientations) { this._orientation = orientation }
 
     public override get zIndex(): number {return this._zIndex; }
     public override set zIndex(z: number)

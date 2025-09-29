@@ -11,7 +11,6 @@ export class Marker
 type LineAttachmentAxis =  "x" | "y" | "closest"
 type Point = {x: number, y: number};
 interface PathStyle {
-    
     stroke: string,
     strokeDasharray: string,
     strokeLinecap: string,
@@ -285,12 +284,20 @@ export class LineVisual
     {
         let labelContainer = document.createElementNS("http://www.w3.org/2000/svg", "text");
         labelContainer.setAttribute("dy", "-20");
-
+        if(line.originElement.center.x > line.targetElement.center.x)
+        {
+            labelContainer.setAttribute("transform", "scale(-1,-1)");
+            labelContainer.setAttribute("transform-origin", "center center");
+            labelContainer.setAttribute("dy", "20");
+            labelContainer.style.transformBox = "fill-box";
+        }
+        
         let label = document.createElementNS("http://www.w3.org/2000/svg", "textPath");
         label.setAttribute("href", "#"+line.id);
         label.setAttribute("text-anchor", "middle");
         label.setAttribute("startOffset", "50%");
         label.innerHTML = line.title;
+
 
         labelContainer.appendChild(label);
         return labelContainer;
@@ -363,12 +370,7 @@ export class DroppedLineVisual extends LineVisual
         let topElementBottom = topElement.position.top + topElement.dimension.height;
         let deltaY = topElementBottom  - bottomElementTop 
 
-
-        let leftElement = originElement.position.left < targetElement.position.left? originElement: targetElement;
-        let rightElement = leftElement.id == originElement.id? targetElement: originElement;
-
-        let elementsOverlapping = originElement.center.x > targetElement.position.left && originElement.center.x < targetElement.position.left + targetElement.dimension.width
-        if(!elementsOverlapping)
+        if(!this.isOverlapping(originElement, targetElement))
         {
             return [
                 new BendPoint(
@@ -387,12 +389,27 @@ export class DroppedLineVisual extends LineVisual
         return []
     } 
 
+    protected override _calculateOriginPoint(line: LineView): Point {
+        let originPoint: Point = super._calculateOriginPoint(line);
+        let narrowerElement = this.narrowerElement(line.originElement, line.targetElement) || line.originElement;
+
+        if(!this.isOverlapping(line.originElement, line.targetElement))
+            return originPoint;
+
+        originPoint.x = narrowerElement.center.x;
+
+        return originPoint;
+    }
+
     protected override _calculateTargetPoint(line: LineView): Point {
         let targetPoint:Point = {x: 0, y: 0};
+
+        let narrowerElement = this.narrowerElement(line.originElement, line.targetElement) || line.targetElement;
+        
         if(this.isOverlapping(line.originElement, line.targetElement))
-            targetPoint.x = line.originElement.center.x
+            targetPoint.x = narrowerElement.center.x;
         else
-            targetPoint.x = this._calculateDefaultBendpoints(line.originElement, line.targetElement)[1].x
+            targetPoint.x = line.targetElement.center.x
 
         let targetIsAbove = line.targetElement.position.top < line.originElement.position.top;
         if(targetIsAbove)
@@ -400,14 +417,26 @@ export class DroppedLineVisual extends LineVisual
         else
             targetPoint.y = line.targetElement.position.top
 
-
         return targetPoint;
     }
 
     private isOverlapping(origin: View, target: View):boolean
     {
+        let narrowerElement = this.narrowerElement(origin, target) || origin;
+        let widerElement = this.widerElement(origin, target) || target;
+        return narrowerElement.center.x > widerElement.position.left && narrowerElement.center.x < widerElement.position.left + widerElement.dimension.width
+    }
 
-        return origin.center.x > target.position.left && origin.center.x < target.position.left + target.dimension.width
+    private widerElement(element1: View, element2: View): View  | undefined
+    {
+        if(Math.abs(element1.dimension.width - element2.dimension.width) < 10) return;
+        return element1.dimension.width > element2.dimension.width? element1: element2;
+    }
+
+    private narrowerElement(element1: View, element2: View): View | undefined
+    {
+        if(Math.abs(element1.dimension.width - element2.dimension.width) < 10) return;
+        return element1.dimension.width < element2.dimension.width? element1: element2;
     }
 }
 

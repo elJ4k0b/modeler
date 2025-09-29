@@ -88,8 +88,27 @@ textPath {
     font-size: var(--title-size);
     pointer-events: none;
     color: var(--text-color);
+    text-wrap: wrap;
+    word-wrap: anywhere;
+    white-space: pre-wrap;
+    
+}
+
+.card-type-collapsed {
+    position: absolute;
+    text-align: center;
+    bottom: 100%;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    height: fit-content;
+
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: var(--title-size);
+    pointer-events: none;
+    color: var(--text-color);
     overflow: hidden;
     text-overflow: ellipsis;
+    text-wrap: nowrap;
 }
 
 .card > .card-title {
@@ -123,9 +142,8 @@ textPath {
     height: 90%;
     aspect-ratio: 1/1;
     top:5px;
-    right: 5px;
+    left: 5px;
     position: absolute;
-    transform: rotate(90deg);
     pointer-events: none;
     background-repeat: no-repeat;
 }
@@ -144,6 +162,7 @@ textPath {
 .container {
     position: relative;
     display: block;
+    overflow: hidden;
 }
 
 .container-title {
@@ -155,8 +174,16 @@ textPath {
     color: #332E33;
     position: absolute;
     transform-origin: bottom right;
-    transform: translate(-100%,-100%) rotate(270deg) translateY(100%);
     border-block-end: solid 2px lightgray;
+}
+
+.container-orientation-horizontal {
+    
+    transform: translate(-100%,-100%) rotate(270deg) translateY(100%);
+}
+
+.container-orientation-vertical {
+    transform: translate(0%,-100%) translateY(100%);
 }
 
 .debug-info {

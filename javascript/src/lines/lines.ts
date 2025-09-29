@@ -7,8 +7,10 @@ let arrow_types: {[index: string]: ArrowType} = {
     "line": "line",
     "line-dashed": "line-dashed",
     "line-arrowed": "line-arrowed",
+    "line-straight": "line-straight",
     "line-dashed-arrowed": "line-dashed-arrowed",
     "line-dropped-arrowed": "line-dropped-arrowed",
+    "line-straight-arrowed": "line-straight-arrowed",
 }
 
 export type ArrowType = "line" | "line-dashed" | "line-arrowed" | "line-dashed-arrowed" | "line-dropped-arrowed" | "line-straight-arrowed" | "line-straight" ; 
@@ -123,7 +125,7 @@ export function drawline_at(line: LineView, startpoint: Point, endpoint: Point, 
     {
         if(!type.includes('dropped'))
         {
-            
+            console.log("wow")
             let deltaY = Math.abs(all_points[0].y - all_points[1].y);
             let higherPoint = all_points[0].y < all_points[1].y? all_points[0]: all_points[1];
 
@@ -136,6 +138,7 @@ export function drawline_at(line: LineView, startpoint: Point, endpoint: Point, 
         }
         else
         {
+            console.log("wow2")
             line.addBendpoint(new BendPoint({x:all_points[0].x, y: all_points[1].y}));
             all_points.splice(1, 0, {x:all_points[0].x, y: all_points[1].y});
         }

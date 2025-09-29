@@ -30,7 +30,6 @@ class Tableview extends DiagramElementView
             height: pHeight
         };
 
-        this.selected = false;
         this.locked = false;
         this._dragged = false;
     }
