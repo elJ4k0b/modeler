@@ -1,3 +1,4 @@
+import { notify } from "../API.js";
 import ContainerView from "../containerview.js";
 import { diagview } from "../diagramview.js";
 import { log } from "../Log.js";
@@ -80,6 +81,7 @@ class LineView extends View
     public addBendpoint(bendpoint: BendPoint)
     {
         this._bendpoints.set(bendpoint.id, bendpoint);
+        notify("bendpoints-update", {id: this.id, bendpoints: this.bendpoints});
     }
 
     public move(delta: {x: number, y: number})
