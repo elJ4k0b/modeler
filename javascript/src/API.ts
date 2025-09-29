@@ -496,6 +496,8 @@ export function notify(type: string, args: any)
                 break;
             case "container-resize":
                 container_resized(args.id, pos_to_grid(args.x), pos_to_grid(args.y), args.width / size, args.height / size);
+            case "bendpoints-update":
+                bendpoints_updated(args.id, args.bendpoints);
         }
     }
     catch(error)
@@ -510,6 +512,8 @@ function content_selected(id: string)
     log(`content ${id} was selected`, "info");
     // @ts-ignore
 	B4A.CallSub('ContentSelected', true, id);
+    // @ts-ignore
+    window.location.hash ="#content_moved" + Math.random().toString(36).substring(2, 15); //nur um den hash zu ändern
 }
 
 function start_selected(id: string)
@@ -575,5 +579,21 @@ function content_highlighted(id: number)
     log(`highlight was added to content ${id}`, "info");
     // @ts-ignore
     B4A.CallSub('HighlightSelected', true, id);
+}
+
+function bendpoints_updated(lineId: number, breakpoints: Array<{x:number, y:number}>)
+{
+    let breakpointString = "";
+    for(let breakpoint of breakpoints)
+    {
+        let newBreakpoint = `${pos_to_grid(breakpoint.x)},${pos_to_grid(breakpoint.y)}`
+        if(breakpointString != "")
+            breakpointString += ";" + newBreakpoint
+        else
+            breakpointString += newBreakpoint;
+    }
+    log(`breakpoints of line with id ${lineId} where updated to be ${breakpointString}`, "info");
+    //@ts-ignore
+    B4A.CallSub('BreakpointsUpdated', lineId, breakpointString)
 }
 
