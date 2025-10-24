@@ -513,7 +513,7 @@ function content_selected(id: string)
     // @ts-ignore
 	B4A.CallSub('ContentSelected', true, id);
     // @ts-ignore
-    window.location.hash ="#content_moved" + Math.random().toString(36).substring(2, 15); //nur um den hash zu ändern
+    window.location.hash = "#event=contentselected&pstrid=" + id
 }
 
 function start_selected(id: string)
@@ -521,6 +521,8 @@ function start_selected(id: string)
     log(`content ${id} is starting element`, "info");
     // @ts-ignore
 	B4A.CallSub('CurrentSelected', true, id);
+    //@ts-ignore
+    window.location.hash = "#event=currentselected&pstrid=" + id
 }
 
 function content_moved(id: string, x: number, y: number)
@@ -528,6 +530,8 @@ function content_moved(id: string, x: number, y: number)
     log(`content ${id} moved to ${x}, ${y}`, "info");
     // @ts-ignore
 	B4A.CallSub('ContentMoved', true, id, x, y);
+    //ts-ignore
+    window.location.hash = `#event=contentmoved&pstrid=${id}&pstrxy=${x},${y}`;
 }
 
 function container_resized(id: string, x:number, y: number, w: number, h: number)
@@ -536,7 +540,7 @@ function container_resized(id: string, x:number, y: number, w: number, h: number
     // @ts-ignore
     B4A.CallSub('ContainerResized', true, id, `${x}, ${y}, ${w}, ${h}`);
     //@ts-ignore
-	//B4A.CallSub('ContainerResized', true, id, x, y, w, h);
+	window.location.hash = `#event=containerresized&pstrid=${id}&pstrxywh=${x},${y},${w},${h}`;
 }
 
 function content_added_to_container(id: number, containerid: number)
@@ -544,12 +548,16 @@ function content_added_to_container(id: number, containerid: number)
     log(`content ${id} added to container ${containerid}`, "info");
     // @ts-ignore
 	B4A.CallSub('ContentAddedToContainer', true, id, containerid);
+    //@ts-ignore
+    window.location.hash = `#event=contentaddedtocontainer&pstrid=${id}&pstrcontainerid=${containerid}`;
 }
 
 function  content_removed_from_container(id: number, containerid: number)
 {
     //TODO: B4A.Callsub fehlt noch 
     log(`content ${id} removed from container ${containerid}`, "info");
+    //@ts-ignore
+    window.location.hash = `#event=contentremovedfromcontainer&pstrid=${id}&pstrcontainerid=${containerid}`;
 }
 
 
@@ -558,6 +566,8 @@ function content_deselected(id: number)
     log(`content ${id} was deselected`, "info");
     // @ts-ignore
     B4A.CallSub('ContentDeselected', true, id);
+    //@ts-ignore
+    window.location.hash = "#event=contentdeselected&pstrid=" + id;
 }
 
 function start_deselected(id: number)
@@ -565,6 +575,8 @@ function start_deselected(id: number)
     log(`start was removed from content ${id}`, "info");
     // @ts-ignore
     B4A.CallSub('StartDeselected', true, id);
+    //ts-ignore
+     window.location.hash = "#event=currentdeselected&pstrid=" + id;
 }
 
 function highlight_deselected(id: number)
@@ -572,6 +584,8 @@ function highlight_deselected(id: number)
     log(`highlight was removed from content ${id}`, "info");
     // @ts-ignore
     B4A.CallSub('HighlightDeselected', true, id);
+    //ts-ignore
+    window.location.hash = "#event=highlightdeselected&pstrid=" + id;
 }
 
 function content_highlighted(id: number)
@@ -579,6 +593,8 @@ function content_highlighted(id: number)
     log(`highlight was added to content ${id}`, "info");
     // @ts-ignore
     B4A.CallSub('HighlightSelected', true, id);
+    //@ts-ignore
+    window.location.hash = "#event=highlightselected&pstrid=" + id;
 }
 
 function bendpoints_updated(lineId: number, breakpoints: Array<{x:number, y:number}>)
@@ -595,5 +611,7 @@ function bendpoints_updated(lineId: number, breakpoints: Array<{x:number, y:numb
     log(`breakpoints of line with id ${lineId} where updated to be ${breakpointString}`, "info");
     //@ts-ignore
     B4A.CallSub('BreakpointsUpdated', lineId, breakpointString)
+    //@ts-ignore
+    window.location.hash = `#event=breakpointsupdated&pstrid=${lineId}&pstrbreakpoints=${breakpointString}`;
 }
 
