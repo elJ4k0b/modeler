@@ -7,3 +7,7 @@ package-lock.json
 
 # TypeScript spezifische Artefakte
 *.tsbuildinfo
+
+# Generierte Dateien
+dist/
+.parcel-cache/
