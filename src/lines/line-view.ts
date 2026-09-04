@@ -1,0 +1,156 @@
+import { notify } from "../api.js";
+import ContainerView from "../views/container-view.js";
+import { diagview } from "../views/diagram-view.js";
+import { log } from "../core/log.js";
+import Tableview from "../views/table-view.js";
+import { View } from "../views/view.js";
+
+type Point = {x: number, y: number};
+
+export class BendPoint
+{
+    public x: number = 0;
+    public y: number = 0;
+    public id: string;
+    constructor(point: Point)
+    {
+        this.x = point.x;
+        this.y = point.y;
+        this. id = (Math.random() * 10000).toString();
+    }
+}
+
+class LineView extends View
+{
+    public override id: string;
+    public override title: string;
+    public override typeId: string;
+    public override selected: boolean;
+    public override container: ContainerView | null;
+
+    private _bendpoints: Map<string, BendPoint>
+    public startId: string;
+    public endId: string;
+
+    constructor(pId: string, pStartId: string, pEndId: string, pType: string, pTitle: string, pBendPoints: Array<Point>)
+    {
+        super();
+        this.id = pId;
+        this.title = pTitle;
+        this.typeId = pType;
+        this.selected = false;
+        this.container = null
+
+        this.startId = pStartId; 
+        this.endId = pEndId;
+
+        this._bendpoints = new Map();
+        for(let point of pBendPoints)
+        {
+            let bendpoint = new BendPoint(point);
+            this._bendpoints.set(bendpoint.id, bendpoint);
+        }
+    }
+
+    public get bendpoints(): Array<BendPoint>
+    {
+        let bendpointArray = Array.from(this._bendpoints.values());
+        let origin = {
+            x: this.originElement.position.left,
+            y: this.originElement.position.top,
+        }
+        return bendpointArray.sort((a,b) => _distance(origin, a) - _distance(origin, b));
+    }
+
+    public set bendpoints(points: Array<Point>)
+    {
+        this.update(points)
+        this._bendpoints = new Map();
+        for(let point of points)
+        {
+            let bendpoint = new BendPoint(point);
+            this._bendpoints.set(bendpoint.id, bendpoint);
+        }
+    };
+
+    public getBendpoint(id: string): BendPoint
+    {
+        return this._bendpoints.get(id) || new BendPoint({x: 0, y: 0});
+    }
+
+    public addBendpoint(bendpoint: BendPoint)
+    {
+        this._bendpoints.set(bendpoint.id, bendpoint);
+        notify("bendpoints-update", {id: this.id, bendpoints: this.bendpoints});
+    }
+
+    public updateBendpoint(id: string, position: Point)
+    {
+        let bendpoint = this._bendpoints.get(id);
+        if(!bendpoint)
+        {
+            log(`Trying to update a bendpoint with id ${id} that does not exist`, "error", {file: "lineview.ts", method: "updateBendpoint"});
+            return;
+        }
+        bendpoint.x = position.x;
+        bendpoint.y = position.y;
+    }
+
+    public move(delta: {x: number, y: number})
+    {
+        for(let point of this.bendpoints)
+        {
+            point.x += delta.x;
+            point.y += delta.y;
+        }
+    }
+
+    public resetBendpoints()
+    {
+        this._bendpoints = new Map();
+    }
+
+    public update(points: Array<{x: number, y: number}>)
+    {
+        let first = points[0];
+        let last = points[1];
+
+        this.position.left = first.x;
+        this.position.top = first.y;
+
+        this.dimension.width = Math.abs(first.x - last.x);
+        this.dimension.height = Math.abs(first.y - last.y);
+    }
+
+    public get originElement()
+    {
+        let originElement = diagview.get_element(this.startId);
+        if(!originElement)
+        {
+            log(`OriginElement of line with id ${this.id} does not exist`, "error", {file: "lineview.ts", method: "targetElement"});
+            return new Tableview("", "", "", 0, 0 ,0, 0, null);
+        }
+        return originElement
+    }
+
+    public get targetElement()
+    {
+        let targetElement = diagview.get_element(this.endId);
+        if(!targetElement)
+        {
+            log(`TargetElement of line with id ${this.id} does not exist`, "error", {file: "lineview.ts", method: "targetElement"});
+            return new Tableview("", "", "", 0, 0 ,0, 0, null);
+        }
+        return targetElement
+    }
+}
+
+function _distance(point1: Point, point2: Point)
+{
+    let distance:Point = {x: 0, y: 0};
+    distance.x = Math.abs(point1.x - point2.x);
+    distance.y = Math.abs(point1.y - point2.y);
+    return Math.sqrt(Math.pow(distance.x, 2) + Math.pow(distance.y, 2));
+}
+
+export default LineView;
